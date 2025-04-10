@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "960140212069",
+    "project_id": "discount-project-6dfc5",
+    "storage_bucket": "discount-project-6dfc5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:960140212069:android:e81f298fcf63bef4dc538c",
+        "android_client_info": {
+          "package_name": "com.example.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgl5EuSEHtVFBGiDYyFaRsix2fNHa45ck"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
