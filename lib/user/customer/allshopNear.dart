@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:mobile/components/bottomNav.dart';
 import 'package:mobile/user/customer/homePage.dart';
 import 'package:mobile/user/customer/mailBox.dart';
@@ -11,6 +12,57 @@ class AllShopNearby extends StatefulWidget {
 }
 
 class _AllShopNearbyState extends State<AllShopNearby> {
+  String location = 'Getting location...';
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      setState(() {
+        location = 'Location services are disabled.';
+      });
+      return;
+    }
+
+    // Check permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        setState(() {
+          location = 'Location permission denied.';
+        });
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      setState(() {
+        location = 'Location permission permanently denied.';
+      });
+      return;
+    }
+
+    // Get location
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    setState(() {
+      location = 'Lat: ${position.latitude}, Lng: ${position.longitude}';
+    });
+    print('Current location: $location');
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -176,6 +228,14 @@ class _AllShopNearbyState extends State<AllShopNearby> {
                                   ),
                                 ),
                               ),
+                            Container(
+                              height: 90,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            )
                           ],
                         ),
                       ),

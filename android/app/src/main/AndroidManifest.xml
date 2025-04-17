@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- If targeting Android 13 (API level 33) or higher, also add: -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:label="mobile"
         android:name="${applicationName}"
