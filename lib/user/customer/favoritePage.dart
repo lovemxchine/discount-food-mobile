@@ -173,6 +173,14 @@ class _FavoritePageState extends State<FavoritePage> {
                                   ),
                                 ),
                               ),
+                            Container(
+                              height: 90,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            )
                           ],
                         ),
                       ),
