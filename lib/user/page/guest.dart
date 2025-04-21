@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:mobile/user/page/guestProduct.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GuestScreen extends StatefulWidget {
   @override
@@ -18,11 +19,11 @@ class _GuestScreenState extends State<GuestScreen> {
   List<dynamic> filteredItems = [];
   TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
-
+  var pathAPI = '';
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    initFetch();
     searchController.addListener(filterItems);
   }
 
@@ -43,12 +44,26 @@ class _GuestScreenState extends State<GuestScreen> {
     });
   }
 
+  Future<void> initFetch() async {
+    await fetchUrl(); // Wait until pathAPI is set
+    await _fetchData(); // Then fetch data
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+
+  }
+
   Future<void> _fetchData() async {
     setState(() {
       _isLoading = true;
     });
-    final url = Uri.parse("http://10.0.2.2:3000/customer/availableShop");
 
+    final url = Uri.parse("http://$pathAPI/customer/availableShop");
     try {
       var response = await http.get(url);
       final Map<String, dynamic> responseData = json.decode(response.body);
@@ -60,6 +75,7 @@ class _GuestScreenState extends State<GuestScreen> {
           filteredItems = listProducts;
           _isLoading = false;
         });
+        print(listProducts);
       } else {
         setState(() {
           _isLoading = false;

@@ -23,11 +23,25 @@ class _ProductUpdateScreenState extends State<ProductUpdateScreen> {
   final bool isLoading = true;
   final MediaType mediaType = MediaType('application', 'json');
   late int currentQuantity;
-  var pathAPI = "http://10.0.2.2:3000";
+  var pathAPI = "";
 
   Future<String?> getUID() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('user_uid');
+  }
+
+  Future<void> updateProduct() async {
+    await fetchUrl();
+    await updateProd();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
   }
 
   String formatExpiredDate(String dateStr) {
@@ -42,7 +56,7 @@ class _ProductUpdateScreenState extends State<ProductUpdateScreen> {
       print(uid);
       print(prodID);
 
-      final url = Uri.parse("$pathAPI/shop/$uid/product/$prodID");
+      final url = Uri.parse("http://$pathAPI/shop/$uid/product/$prodID");
       var response = await http.patch(url,
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -245,7 +259,7 @@ class _ProductUpdateScreenState extends State<ProductUpdateScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 )),
                             onPressed: () {
-                              updateProd();
+                              updateProduct();
                             },
                             child: Center(
                               child: Container(

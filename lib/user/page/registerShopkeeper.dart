@@ -14,6 +14,7 @@ import 'package:mobile/user/page/selectMap.dart';
 import 'package:mobile/user/service/auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile/user/service/controller/googlemap.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterShopkeeper extends StatefulWidget {
   @override
@@ -93,6 +94,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     'คลองหลวง': ['ตำบลคลองหนึ่ง', 'ตำบลคลองสอง'],
     'ธัญบุรี': ['ตำบลรังสิต', 'ตำบลประชาธิปัตย์'],
   };
+  var pathAPI = '';
   @override
   void initState() {
     super.initState();
@@ -410,6 +412,20 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     return Future.value(true);
   }
 
+  Future<void> signUpFunc() async {
+    await fetchUrl();
+    await _signUp();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
+
   Future<void> _signUp() async {
     String email = emailController.text;
     String password = passwordController.text;
@@ -425,8 +441,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
         print(user.uid);
 
         // Create the request
-        final url =
-            Uri.parse("http://10.0.2.2:3000/authentication/registerShop");
+        final url = Uri.parse("http://$pathAPI/authentication/registerShop");
         var request = http.MultipartRequest('POST', url);
 
         // Add the JSON fields to the request
@@ -1155,7 +1170,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                           child: SizedBox(
                             width: 280,
                             child: ElevatedButton(
-                              onPressed: fourthPageValidate ? _signUp : null,
+                              onPressed: fourthPageValidate ? signUpFunc : null,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: fourthPageValidate
                                     ? Colors.blue

@@ -32,8 +32,28 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController expiredDate = TextEditingController();
   File? _image;
   File? _imageGemini;
-  var pathAPI = "http://10.0.2.2:3000";
+  var pathAPI = "";
   var uid = '';
+
+  Future<void> addProductFunc() async {
+    await fetchUrl();
+    await addProduct();
+  }
+
+  Future<void> sentImageFunc() async {
+    await fetchUrl();
+    await sentImageGemini();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
+
   Future<File?> cropImage(String imagePath) async {
     try {
       final croppedFile = await ImageCropper().cropImage(
@@ -127,7 +147,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
 
     try {
-      final url = Uri.parse("$pathAPI/shop/$uid/product/addProduct");
+      final url = Uri.parse("http://$pathAPI/shop/$uid/product/addProduct");
       var request = http.MultipartRequest('POST', url);
       request.headers['Content-Type'] = 'application/json; charset=UTF-8';
       request.fields['product_name'] = nameController.text;
@@ -170,7 +190,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
-    var url = Uri.parse(pathAPI + '/gemini/OCR');
+    var url = Uri.parse('http://' + pathAPI + '/gemini/OCR');
     var request = http.MultipartRequest('POST', url);
     request.files
         .add(await http.MultipartFile.fromPath('image', _imageGemini!.path));
@@ -460,7 +480,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             // color: Color(0xFFFF6838),
                             child: ElevatedButton(
                               onPressed:
-                                  _imageGemini != null ? sentImageGemini : null,
+                                  _imageGemini != null ? sentImageFunc : null,
                               style: ElevatedButton.styleFrom(
                                 // elevation: 0,
                                 foregroundColor:
@@ -489,7 +509,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               SizedBox(height: 15),
               InkWell(
                 onTap: () {
-                  addProduct();
+                  addProductFunc();
                 },
                 child: Container(
                   height: 40,

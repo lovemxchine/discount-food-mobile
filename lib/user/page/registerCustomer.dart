@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/components/textFieldComponent.dart';
 import 'package:mobile/user/service/auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterCustomer extends StatefulWidget {
   @override
@@ -31,6 +32,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
   int globalValueStatus = 0;
   final PageController _pageController = PageController();
   bool signInAllow = true;
+  var pathAPI = '';
 
   @override
   void initState() {
@@ -221,7 +223,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                           width: 230,
                           child: ElevatedButton(
                             onPressed: secondPageValidate && signInAllow
-                                ? _signUp
+                                ? initFetch
                                 : null,
                             style: ElevatedButton.styleFrom(
                               shadowColor: Colors.transparent,
@@ -258,6 +260,20 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
     );
   }
 
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await _signUp();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
+
   Future<void> _signUp() async {
     String email = emailController.text;
     String password = passwordController.text;
@@ -273,13 +289,13 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
     try {
       User? user = await _auth.signUpWithEmailAndPassword(email, password);
 
-      if (user != null) {
+      if (user != null && pathAPI.isNotEmpty) {
         print('Sign up success');
         print(user);
         print(user.uid);
         print('hello world');
 
-        final url = Uri.parse("http://10.0.2.2:3000/authentication/customer");
+        final url = Uri.parse("http://$pathAPI:3000/authentication/customer");
         final response = await http.post(
           url,
           headers: {

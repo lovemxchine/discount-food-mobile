@@ -11,6 +11,7 @@ import 'package:mobile/user/customer/mailBox.dart';
 import 'package:mobile/user/customer/favoritePage.dart';
 import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/settingsPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Homepage extends StatefulWidget {
   @override
@@ -22,13 +23,13 @@ class _HomepageState extends State<Homepage> {
   List<dynamic> filteredItems = [];
   TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
-
+  var pathAPI = '';
   //int _currentIndex = 2;
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    initFetch();
     searchController.addListener(filterItems);
   }
 
@@ -49,11 +50,25 @@ class _HomepageState extends State<Homepage> {
     });
   }
 
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await _fetchData();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
+
   Future<void> _fetchData() async {
     setState(() {
       _isLoading = true;
     });
-    final url = Uri.parse("http://10.0.2.2:3000/customer/availableShop");
+    final url = Uri.parse("http://$pathAPI/customer/availableShop");
 
     try {
       var response = await http.get(url);
@@ -82,7 +97,7 @@ class _HomepageState extends State<Homepage> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        backgroundColor:  Color.fromRGBO(255, 104, 56, 1),
+        backgroundColor: Color.fromRGBO(255, 104, 56, 1),
         body: Column(
           children: [
             Container(
@@ -95,7 +110,7 @@ class _HomepageState extends State<Homepage> {
                   Container(
                     width: 60,
                     height: 60,
-                    decoration:  BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Colors.grey,
                       shape: BoxShape.circle,
                       image: DecorationImage(
@@ -112,7 +127,7 @@ class _HomepageState extends State<Homepage> {
                         'ชาญณรงค์ ชาญเฌอ',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
-                       SizedBox(height: 5),
+                      SizedBox(height: 5),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 4),
@@ -120,7 +135,7 @@ class _HomepageState extends State<Homepage> {
                           color: Colors.white.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child:  Text(
+                        child: Text(
                           'ผู้ใช้งานทั่วไป',
                           style: TextStyle(fontSize: 13, color: Colors.white),
                           textAlign: TextAlign.center,
@@ -131,10 +146,10 @@ class _HomepageState extends State<Homepage> {
                 ],
               ),
             ),
-             SizedBox(height: 20),
+            SizedBox(height: 20),
             Expanded(
               child: Container(
-                decoration:  BoxDecoration(
+                decoration: BoxDecoration(
                   color: Color.fromARGB(255, 224, 217, 217),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
@@ -150,10 +165,9 @@ class _HomepageState extends State<Homepage> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          prefixIcon:
-                               Icon(Icons.search, color: Colors.grey),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
                           hintText: 'ค้นหาร้านค้า',
-                          hintStyle:  TextStyle(color: Colors.grey),
+                          hintStyle: TextStyle(color: Colors.grey),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
                             borderSide: BorderSide.none,
@@ -161,7 +175,7 @@ class _HomepageState extends State<Homepage> {
                         ),
                       ),
                     ),
-                     Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -181,101 +195,101 @@ class _HomepageState extends State<Homepage> {
                     const SizedBox(height: 20),
                     Expanded(
                       child: _isLoading
-                      ? Center(
-                        child: CircularProgressIndicator(),
-                      )
-                      : SingleChildScrollView(
-                        child: Column(
-                          children:  filteredItems.map((item){
-                          return   Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 20),
-                                child: InkWell(
-                                  onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ProductInShop(
-                                                shopData: item,
+                          ? Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : SingleChildScrollView(
+                              child: Column(
+                                children: filteredItems.map((item) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 20),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ProductInShop(
+                                              shopData: item,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        height: 90,
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black26,
+                                              blurRadius: 1,
+                                              offset: Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              width: 80,
+                                              height: 80,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey,
+                                                image: DecorationImage(
+                                                  image: AssetImage(
+                                                      'assets/images/alt.png'),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
                                               ),
                                             ),
-                                          );
-                                        },
-                                  child: Container(
-                                    height: 90,
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow:  [
-                                        BoxShadow(
-                                          color: Colors.black26,
-                                          blurRadius: 1,
-                                          offset: Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: 80,
-                                          height: 80,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey,
-                                            image:  DecorationImage(
-                                              image: AssetImage(
-                                                  'assets/images/alt.png'),
-                                              fit: BoxFit.cover,
+                                            SizedBox(width: 20),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    item['name'],
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Text(
+                                                    'เวลาเปิด - ปิด ( ${item['openAt']} -  ${item['closeAt']} )',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Text(
+                                                    'ระยะห่าง',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                          ),
+                                            const Icon(Icons.favorite_border,
+                                                color: Colors.red),
+                                          ],
                                         ),
-                                         SizedBox(width: 20),
-                                         Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item['name'],
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                              SizedBox(height: 5),
-                                              Text(
-                                                'เวลาเปิด - ปิด ( ${item['openAt']} -  ${item['closeAt']} )',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                              SizedBox(height: 5),
-                                              Text(
-                                                'ระยะห่าง',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const Icon(Icons.favorite_border,
-                                            color: Colors.red),
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ),
-                              );
-                         }).toList(),
-                        ),//นี่
-                      ),//นี้
+                                  );
+                                }).toList(),
+                              ), //นี่
+                            ), //นี้
                     ), //บรรทัดนี้
                   ],
                 ),
