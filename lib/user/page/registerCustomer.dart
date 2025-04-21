@@ -37,7 +37,6 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
   @override
   void initState() {
     super.initState();
-    initFetch();
     emailController.addListener(checkFields);
     passwordController.addListener(checkFields);
     nameController.addListener(checkFields);

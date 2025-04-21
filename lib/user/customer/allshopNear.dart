@@ -5,6 +5,8 @@ import 'package:mobile/user/customer/homePage.dart';
 import 'package:mobile/user/customer/mailBox.dart';
 import 'package:mobile/user/customer/favoritePage.dart';
 import 'package:mobile/user/customer/settingsPage.dart';
+import 'package:mobile/utils/func/fetchData.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AllShopNearby extends StatefulWidget {
   @override
@@ -13,11 +15,27 @@ class AllShopNearby extends StatefulWidget {
 
 class _AllShopNearbyState extends State<AllShopNearby> {
   String location = 'Getting location...';
+  var pathAPI = '';
+  List listProducts = [];
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    initFetch();
+  }
+
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await _getCurrentLocation();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
   }
 
   Future<void> _getCurrentLocation() async {
@@ -61,6 +79,17 @@ class _AllShopNearbyState extends State<AllShopNearby> {
       location = 'Lat: ${position.latitude}, Lng: ${position.longitude}';
     });
     print('Current location: $location');
+
+    final result = await getData(
+        'http://$pathAPI/shop/nearbyShop?lat=${position.latitude}&lng=${position.longitude}');
+
+    if (result['status'] == "success") {
+      setState(() {
+        listProducts = result['data'];
+      });
+    }
+    print(listProducts.length);
+    print(listProducts);
   }
 
   @override
