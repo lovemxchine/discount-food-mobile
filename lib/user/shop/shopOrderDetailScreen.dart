@@ -23,7 +23,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   final bool isLoading = true;
   final MediaType mediaType = MediaType('application', 'json');
   late int currentQuantity;
-  var pathAPI = "http://10.0.2.2:3000";
+  var pathAPI = "";
 
   Future<String?> getUID() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -33,6 +33,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   String formatExpiredDate(String dateStr) {
     DateTime dateTime = DateTime.parse(dateStr);
     return DateFormat('dd-MM-yyyy').format(dateTime);
+  }
+
+  // Future<void> initFetch() async {
+  //   await fetchUrl();
+  //   await updateProd();
+  // }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
   }
 
   // Future<void> updateProd() async {

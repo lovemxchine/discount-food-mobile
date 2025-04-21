@@ -23,6 +23,7 @@ class _SignInState extends State<SignIn> {
   final TextEditingController passwordController = TextEditingController();
   String email = '';
   String password = '';
+  var pathAPI = '';
 
   Future<void> storeUID(String uid, String role) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -30,14 +31,24 @@ class _SignInState extends State<SignIn> {
     await prefs.setString('user_role', role);
   }
 
-  // Future<String?> getUID() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   return prefs.getString('uid');
-  // }
+  Future<void> signInFunc() async {
+    await fetchUrl();
+    _signIn();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
 
   @override
   void initState() {
     super.initState();
+    // initFetch();
     _signOutUser();
   }
 
@@ -152,7 +163,7 @@ class _SignInState extends State<SignIn> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      _signIn();
+                      signInFunc();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFFFF6838), // Button color
@@ -212,7 +223,7 @@ class _SignInState extends State<SignIn> {
       print("user");
       if (user != null) {
         print("This Email is registered");
-        final url = Uri.parse("http://10.0.2.2:3000/authentication/signIn");
+        final url = Uri.parse("http://$pathAPI/authentication/signIn");
         final response = await http.post(
           url,
           headers: {

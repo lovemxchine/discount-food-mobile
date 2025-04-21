@@ -25,7 +25,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final MediaType mediaType = MediaType('application', 'json');
   late int currentQuantity;
   List<bool> isSelected = [false, false];
-  var pathAPI = "http://10.0.2.2:3000";
+  var pathAPI = "";
   bool showStatus = true;
   Future<String?> getUID() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -37,11 +37,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return DateFormat('dd/MM/yyyy').format(dateTime);
   }
 
+  Future<void> deleteProduct() async {
+    await fetchUrl();
+    await deleteProd();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
+
   Future<void> deleteProd() async {
-    // Uri url = "http://10.0.2.2:3000/" as Uri;
+    // Uri url = "http://52.65.210.113:3000/" as Uri;
     String? uid = await getUID();
     String prodID = widget.productData['productId'];
-    final url = Uri.parse("$pathAPI/shop/$uid/product/$prodID");
+    final url = Uri.parse("http://$pathAPI/shop/$uid/product/$prodID");
     var response = await http.delete(url,
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
@@ -59,7 +73,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       print(uid);
       print(prodID);
 
-      final url = Uri.parse("$pathAPI/shop/$uid/product/$prodID");
+      final url = Uri.parse("http://$pathAPI/shop/$uid/product/$prodID");
       var response = await http.patch(url,
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -143,7 +157,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         TextButton(
                           onPressed: () => {
-                            deleteProd(),
+                            deleteProduct(),
                             Navigator.pushNamed(context, '/shop')
                           },
                           child: const Text('ยืนยัน',

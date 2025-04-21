@@ -47,6 +47,17 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   @override
+  void initState() {
+    super.initState();
+    _setApiUrl();
+  }
+
+  Future<void> _setApiUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('apiUrl', '3.107.193.86:3000');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,

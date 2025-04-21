@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/user/customer/cartList.dart';
 import 'package:mobile/user/customer/productDetail.dart';
 import 'package:mobile/user/customer/shopDetail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 String formatExpiredDate(String dateStr) {
   DateTime dateTime = DateTime.parse(dateStr);
@@ -23,21 +24,31 @@ class _ProductInShopState extends State<ProductInShop> {
   int cartCount = 12;
   bool _isLoading = false;
   List listProducts = [];
+  String pathAPI = '';
 
   @override
   initState() {
     super.initState();
-    _fetchData();
-    fetchProduct();
+    initFetch();
   }
 
-  Future<void> _fetchData() async {
-    print(widget.shopData);
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await fetchProduct();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
   }
 
   Future<void> fetchProduct() async {
     final url = Uri.parse(
-        "http://10.0.2.2:3000/shop/${widget.shopData['shopkeeperUid']}/getAllProduct");
+        "http://$pathAPI/shop/${widget.shopData['shopkeeperUid']}/getAllProduct");
     var response = await http.get(url);
     final responseData = jsonDecode(response.body);
     setState(() {
@@ -149,16 +160,14 @@ class _ProductInShopState extends State<ProductInShop> {
                           ),
                           itemCount: listProducts.length,
                           itemBuilder: (context, index) {
-                            final item = listProducts[
-                                index]; 
+                            final item = listProducts[index];
                             return ProductCard(
                               productName: item['productName'],
                               expirationDate: item['expiredDate'],
                               oldPrice: item['originalPrice'],
                               newPrice: item['salePrice'],
                               imageAsset: item['imageUrl'],
-                              productData:
-                                  item, 
+                              productData: item,
                             );
                           },
                         ),

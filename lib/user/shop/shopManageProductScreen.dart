@@ -17,10 +17,11 @@ class ManageProductScreenState extends State<ManageProductScreen> {
   List<dynamic> listProducts = [];
   bool isLoading = true;
   MediaType mediaType = MediaType('application', 'json');
+  var pathAPI = '';
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    initFetch();
   }
 
   Future<String?> getUID() async {
@@ -28,10 +29,24 @@ class ManageProductScreenState extends State<ManageProductScreen> {
     return prefs.getString('user_uid');
   }
 
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await _fetchData();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
+
   Future<void> _fetchData() async {
-    // Uri url = "http://10.0.2.2:3000/" as Uri;
+    // Uri url = "http://52.65.210.113:3000/" as Uri;
     String? uid = await getUID();
-    final url = Uri.parse("http://10.0.2.2:3000/shop/${uid}/getAllProduct");
+    final url = Uri.parse("http://$pathAPI/shop/${uid}/getAllProduct");
     var response = await http.get(
       url,
     );

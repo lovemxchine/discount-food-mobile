@@ -37,10 +37,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   late TextEditingController shopImgUrlController = TextEditingController();
   late TextEditingController shopImgCoverUrlController =
       TextEditingController();
+  var pathAPI = '';
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    initFetch();
   }
 
   Future getImage() async {
@@ -49,7 +50,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
       setState(() {
         if (pickedFile != null) {
-          _saveImage(File(pickedFile.path)); 
+          _saveImage(File(pickedFile.path));
           setState(() {
             shopImgUrlController =
                 File(pickedFile.path) as TextEditingController;
@@ -80,7 +81,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Photo Library'),
                 onTap: () {
-                  getImage();
+                  initImage();
                   Navigator.of(context).pop();
                 },
               ),
@@ -115,16 +116,35 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     return formattedDate;
   }
 
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await _fetchData();
+  }
+
+  Future<void> initImage() async {
+    await fetchUrl();
+    await getImage();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
+
   Future<String?> getUID() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('user_uid');
   }
 
   Future<void> _fetchData() async {
-    // Uri url = "http://10.0.2.2:3000/" as Uri;
+    // Uri url = "http://52.65.210.113:3000/" as Uri;
     print("before fetch");
     String? uid = await getUID();
-    final url = Uri.parse("http://10.0.2.2:3000/shop/profileDetail/${uid}");
+    final url = Uri.parse("http://$pathAPI/shop/profileDetail/${uid}");
     try {
       var response = await http.get(url);
       if (response.statusCode == 200) {
@@ -154,10 +174,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   }
 
   Future<void> _saveImage(File image) async {
-    // Uri url = "http://10.0.2.2:3000/" as Uri;
+    // Uri url = "http://52.65.210.113:3000/" as Uri;
     print("before fetch");
     String? uid = await getUID();
-    final url = Uri.parse("http://10.0.2.2:3000/shop/uploadImage");
+    final url = Uri.parse("http://$pathAPI/shop/uploadImage");
     try {
       var response = await http.post(url,
           body: jsonEncode({

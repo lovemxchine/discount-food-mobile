@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 String formatExpiredDate(String dateStr) {
   DateTime dateTime = DateTime.parse(dateStr);
@@ -21,21 +22,31 @@ class _ProductDetailState extends State<ProductDetail> {
   int quantity = 1;
   bool _isLoading = false;
   List listProducts = [];
+  var pathAPI = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
-    fetchProduct();
+    initFetch();
   }
 
-  Future<void> _fetchData() async {
-    print(widget.shopData);
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await fetchProduct();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
   }
 
   Future<void> fetchProduct() async {
     final url = Uri.parse(
-        "http://10.0.2.2:3000/shop/${widget.shopData['shopkeeperUid']}/getAllProduct");
+        "http://$pathAPI/shop/${widget.shopData['shopkeeperUid']}/getAllProduct");
     var response = await http.get(url);
     final responseData = jsonDecode(response.body);
     setState(() {
