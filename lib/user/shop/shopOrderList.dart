@@ -225,7 +225,7 @@ class OrderListScreenState extends State<OrderListScreen> {
                                   for (int i = 0; i < listOrder.length; i++)
                                     if (listOrder[i] != null &&
                                         listOrder[i]['status'] ==
-                                            "not confirm yet")
+                                            "Pending Order")
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8, horizontal: 20),
@@ -256,10 +256,48 @@ class OrderListScreenState extends State<OrderListScreen> {
                                                 ),
                                               ],
                                             ),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [],
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(6.0),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text("test",
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 12,
+                                                            color:
+                                                                Colors.orange,
+                                                          )),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                          listOrder[i]
+                                                              ['status'],
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 12,
+                                                            color:
+                                                                Colors.orange,
+                                                          )),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),

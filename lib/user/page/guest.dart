@@ -55,7 +55,6 @@ class _GuestScreenState extends State<GuestScreen> {
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
     });
-
   }
 
   Future<void> _fetchData() async {
@@ -268,13 +267,13 @@ class _GuestScreenState extends State<GuestScreen> {
                                                       ),
                                                     ),
                                                     SizedBox(height: 5),
-                                                    Text(
-                                                      'ระยะห่าง',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        color: Colors.black,
-                                                      ),
-                                                    ),
+                                                    // Text(
+                                                    //   'ระยะห่าง',
+                                                    //   style: TextStyle(
+                                                    //     fontSize: 12,
+                                                    //     color: Colors.black,
+                                                    //   ),
+                                                    // ),
                                                   ],
                                                 ),
                                               ),

@@ -10,7 +10,7 @@ import 'package:mobile/user/customer/cartList.dart';
 import 'package:mobile/user/customer/historyPage.dart';
 import 'package:mobile/user/customer/homePage.dart';
 import 'package:mobile/user/customer/mailboxDetail.dart';
-import 'package:mobile/user/customer/payMent.dart';
+import 'package:mobile/user/customer/payment.dart';
 import 'package:mobile/user/customer/productDetail.dart';
 import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/reportShop.dart';
@@ -54,7 +54,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _setApiUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('apiUrl', '3.107.193.86:3000');
+    await prefs.setString('apiUrl', '3.27.214.90:3000');
   }
 
   @override

@@ -156,13 +156,13 @@ class _FavoritePageState extends State<FavoritePage> {
                                                 ),
                                               ),
                                               SizedBox(height: 5),
-                                              Text(
-                                                'ระยะห่าง 1.5km',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
+                                              // Text(
+                                              //   'ระยะห่าง 1.5km',
+                                              //   style: TextStyle(
+                                              //     fontSize: 12,
+                                              //     color: Colors.black,
+                                              //   ),
+                                              // ),
                                             ],
                                           ),
                                         ),

@@ -284,14 +284,14 @@ class ManageProductScreenState extends State<ManageProductScreen> {
                                                             color:
                                                                 Colors.black),
                                                       ),
-                                                      const SizedBox(height: 5),
-                                                      const Text(
-                                                        'ระยะห่าง 1.5km',
-                                                        style: TextStyle(
-                                                            fontSize: 14,
-                                                            color:
-                                                                Colors.black),
-                                                      ),
+
+                                                      // const Text(
+                                                      //   'ระยะห่าง 1.5km',
+                                                      //   style: TextStyle(
+                                                      //       fontSize: 14,
+                                                      //       color:
+                                                      //           Colors.black),
+                                                      // ),
                                                     ],
                                                   ),
                                                 ),

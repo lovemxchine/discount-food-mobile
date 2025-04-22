@@ -21,6 +21,7 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   List<dynamic> listProducts = [];
   List<dynamic> filteredItems = [];
+  Map<String, dynamic> userProfileData = {};
   TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
   var pathAPI = '';
@@ -53,6 +54,7 @@ class _HomepageState extends State<Homepage> {
   Future<void> initFetch() async {
     await fetchUrl();
     await _fetchData();
+    await _fetchProfile();
   }
 
   Future<void> fetchUrl() async {
@@ -85,6 +87,63 @@ class _HomepageState extends State<Homepage> {
         setState(() {
           _isLoading = false;
         });
+        // Handle error
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<String?> getUID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_uid');
+  }
+
+  Future<void> _fetchProfile() async {
+    String? uid = await getUID();
+    final url = Uri.parse("http://$pathAPI/customer/profileDetail?uid=$uid");
+
+    try {
+      var response = await http.get(url);
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+
+      if (response.statusCode == 200) {
+        setState(() {
+          userProfileData = responseData['data'];
+          _isLoading = false;
+        });
+        print(userProfileData);
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        // Handle error
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> updateFav(String shopUID) async {
+    String? uid = await getUID();
+    final url = Uri.parse("http://$pathAPI/customer/favoriteShop");
+
+    try {
+      var response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'shopUid': shopUID, 'uid': uid}),
+      );
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+
+      if (response.statusCode == 200) {
+        setState(() {
+          userProfileData = responseData['data'];
+        });
+        print(userProfileData);
+      } else {
         // Handle error
       }
     } catch (e) {
@@ -135,7 +194,7 @@ class _HomepageState extends State<Homepage> {
                           color: Colors.white.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
+                        child: const Text(
                           'ผู้ใช้งานทั่วไป',
                           style: TextStyle(fontSize: 13, color: Colors.white),
                           textAlign: TextAlign.center,
@@ -149,7 +208,7 @@ class _HomepageState extends State<Homepage> {
             SizedBox(height: 20),
             Expanded(
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Color.fromARGB(255, 224, 217, 217),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
@@ -162,6 +221,7 @@ class _HomepageState extends State<Homepage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 16),
                       child: TextField(
+                        controller: searchController,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
@@ -175,7 +235,7 @@ class _HomepageState extends State<Homepage> {
                         ),
                       ),
                     ),
-                    Padding(
+                    const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -240,8 +300,10 @@ class _HomepageState extends State<Homepage> {
                                               decoration: BoxDecoration(
                                                 color: Colors.grey,
                                                 image: DecorationImage(
-                                                  image: AssetImage(
-                                                      'assets/images/alt.png'),
+                                                  image: NetworkImage(item[
+                                                              'imgUrl']
+                                                          ['shopUrl'] ??
+                                                      'https://via.placeholder.com/150'),
                                                   fit: BoxFit.cover,
                                                 ),
                                                 borderRadius:
@@ -270,18 +332,32 @@ class _HomepageState extends State<Homepage> {
                                                     ),
                                                   ),
                                                   SizedBox(height: 5),
-                                                  Text(
-                                                    'ระยะห่าง',
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
+                                                  // Text(
+                                                  //   'ระยะห่าง',
+                                                  //   style: TextStyle(
+                                                  //     fontSize: 12,
+                                                  //     color: Colors.black,
+                                                  //   ),
+                                                  // ),
                                                 ],
                                               ),
                                             ),
-                                            const Icon(Icons.favorite_border,
-                                                color: Colors.red),
+                                            InkWell(
+                                              onTap: () {
+                                                updateFav(item['shopId']);
+                                                setState(() {
+                                                  initFetch();
+                                                });
+                                              },
+                                              child: Icon(
+                                                  userProfileData['favShop']
+                                                              ?.contains(item[
+                                                                  'shopId']) ??
+                                                          false
+                                                      ? Icons.favorite
+                                                      : Icons.favorite_border,
+                                                  color: Colors.red),
+                                            ),
                                           ],
                                         ),
                                       ),
