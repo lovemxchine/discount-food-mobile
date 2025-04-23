@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/user/customer/payMent.dart';
+import 'package:mobile/user/customer/payment.dart';
 
 class Cartlist extends StatefulWidget {
   const Cartlist({super.key});

@@ -240,13 +240,13 @@ class _AllShopNearbyState extends State<AllShopNearby> {
                                                 ),
                                               ),
                                               SizedBox(height: 5),
-                                              Text(
-                                                'ระยะห่าง',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
+                                              // Text(
+                                              //   'ระยะห่าง',
+                                              //   style: TextStyle(
+                                              //     fontSize: 12,
+                                              //     color: Colors.black,
+                                              //   ),
+                                              // ),
                                             ],
                                           ),
                                         ),

@@ -24,6 +24,7 @@ class _SignInState extends State<SignIn> {
   String email = '';
   String password = '';
   var pathAPI = '';
+  bool loginLoading = false;
 
   Future<void> storeUID(String uid, String role) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -63,161 +64,193 @@ class _SignInState extends State<SignIn> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async => false,
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Center(
-          child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('เข้าสู่ระบบ',
-                      style: TextStyle(
-                          fontSize: 24,
-                          color: Color(0xFFFF6838),
-                          fontFamily: GoogleFonts.mitr().fontFamily)),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  TextField(
-                    controller: emailController,
-                    onSubmitted: (String value) {
-                      setState(() {
-                        email = emailController.text;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      prefixIcon: Icon(Icons.person, color: Color(0xFFFF6838)),
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                          borderSide: const BorderSide(
-                              color: Color(0xFFFF6838), width: 2.0)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFFF6838), // Custom border color
-                          width: 2.0, // Custom border width
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextField(
-                    controller: passwordController,
-                    onSubmitted: (String value) {
-                      setState(() {
-                        password = passwordController.text;
-                      });
-                    },
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.lock, color: Color(0xFFFF6838)),
-                      hintText: 'Password',
-                      // labelText: 'Password',
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                          borderSide: const BorderSide(
-                              color: Color(0xFFFF6838), width: 2.0)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFFF6838), // Custom border color
-                          width: 2.0, // Custom border width
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: RichText(
-                      text: TextSpan(
-                          text: 'เข้าสู่ระบบเป็น ',
+      child: Stack(children: [
+        Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Center(
+            child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: () => {
+                        setState(() {
+                          emailController.text = "testkub@gmail.com";
+                          passwordController.text = "123456";
+                        })
+                      },
+                      child: Text('เข้าสู่ระบบ',
                           style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 24,
                               color: Color(0xFFFF6838),
-                              fontFamily: GoogleFonts.mitr().fontFamily),
-                          children: <TextSpan>[
-                            TextSpan(
-                                text: 'ผู้ชม',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: GoogleFonts.mitr().fontFamily,
-                                    color: Color(0xFFFF6838),
-                                    fontSize: 16,
-                                    decoration: TextDecoration.underline),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    Navigator.pushNamed(context, '/guest');
-                                  })
-                          ]),
+                              fontFamily: GoogleFonts.mitr().fontFamily)),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      signInFunc();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFFF6838), // Button color
-                      minimumSize: Size(600, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(15.0), // Rounded corners
+                    InkWell(
+                      onTap: () => {
+                        setState(() {
+                          emailController.text = "pppp@gmail.com";
+                          passwordController.text = "123456";
+                        })
+                      },
+                      child: SizedBox(
+                        child: Text("         "),
+                        height: 30,
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('เข้าสู่ระบบ',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontFamily: GoogleFonts.mitr().fontFamily)),
-                        const SizedBox(width: 10),
-                        Icon(Icons.arrow_forward, color: Colors.white),
-                      ],
+                    TextField(
+                      controller: emailController,
+                      onSubmitted: (String value) {
+                        setState(() {
+                          email = emailController.text;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Email',
+                        prefixIcon:
+                            Icon(Icons.person, color: Color(0xFFFF6838)),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFFF6838), width: 2.0)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFFF6838), // Custom border color
+                            width: 2.0, // Custom border width
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 35),
-                  RichText(
-                      text: TextSpan(
-                          text: 'ยังไม่มีบัญชีผู้ใช้ ? ',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontFamily: GoogleFonts.mitr().fontFamily),
-                          children: <TextSpan>[
-                        TextSpan(
-                            text: 'สมัครผู้ใช้',
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    TextField(
+                      controller: passwordController,
+                      onSubmitted: (String value) {
+                        setState(() {
+                          password = passwordController.text;
+                        });
+                      },
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.lock, color: Color(0xFFFF6838)),
+                        hintText: 'Password',
+                        // labelText: 'Password',
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFFF6838), width: 2.0)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFFF6838), // Custom border color
+                            width: 2.0, // Custom border width
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 30,
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: RichText(
+                        text: TextSpan(
+                            text: 'เข้าสู่ระบบเป็น ',
                             style: TextStyle(
-                                color: Color(0xFFFF6838),
                                 fontSize: 16,
-                                fontFamily: GoogleFonts.mitr().fontFamily,
-                                decoration: TextDecoration.underline),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                Navigator.pushNamed(context, '/registerRole');
-                              })
-                      ]))
-                ],
-              )),
+                                color: Color(0xFFFF6838),
+                                fontFamily: GoogleFonts.mitr().fontFamily),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: 'ผู้ชม',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: GoogleFonts.mitr().fontFamily,
+                                      color: Color(0xFFFF6838),
+                                      fontSize: 16,
+                                      decoration: TextDecoration.underline),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Navigator.pushNamed(context, '/guest');
+                                    })
+                            ]),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        signInFunc();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFF6838), // Button color
+                        minimumSize: Size(600, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(15.0), // Rounded corners
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('เข้าสู่ระบบ',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontFamily: GoogleFonts.mitr().fontFamily)),
+                          const SizedBox(width: 10),
+                          Icon(Icons.arrow_forward, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 35),
+                    RichText(
+                        text: TextSpan(
+                            text: 'ยังไม่มีบัญชีผู้ใช้ ? ',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontFamily: GoogleFonts.mitr().fontFamily),
+                            children: <TextSpan>[
+                          TextSpan(
+                              text: 'สมัครผู้ใช้',
+                              style: TextStyle(
+                                  color: Color(0xFFFF6838),
+                                  fontSize: 16,
+                                  fontFamily: GoogleFonts.mitr().fontFamily,
+                                  decoration: TextDecoration.underline),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.pushNamed(context, '/registerRole');
+                                })
+                        ]))
+                  ],
+                )),
+          ),
         ),
-      ),
+        if (loginLoading)
+          Container(
+            color: Colors.black.withOpacity(0.3), // สีดำโปร่งบาง
+            child: const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Colors.white), // ให้สีวงกลมเป็นขาว
+              ),
+            ),
+          ),
+      ]),
     );
   }
 
   void _signIn() async {
     String email = emailController.text;
     String password = passwordController.text;
-
+    setState(() {
+      loginLoading = true;
+    });
     try {
       User? user = await _auth.signInWithEmailAndPassword(email, password);
       print("user");
@@ -235,9 +268,11 @@ class _SignInState extends State<SignIn> {
         );
         print('User UID: ${user.uid}');
         print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
         if (response.statusCode == 200) {
           final responseData = jsonDecode(response.body);
+          setState(() {
+            loginLoading = false;
+          });
           if (responseData['userStatus'] == 'success') {
             await storeUID(user.uid, responseData['role']);
             switch (responseData['role']) {
@@ -253,6 +288,9 @@ class _SignInState extends State<SignIn> {
             }
             print('regis');
           } else if (responseData['userStatus'] == 'registerShop') {
+            setState(() {
+              loginLoading = false;
+            });
             await _auth.signOut();
             showDialog(
                 context: context,
@@ -280,6 +318,9 @@ class _SignInState extends State<SignIn> {
                     ));
           }
         } else {
+          setState(() {
+            loginLoading = false;
+          });
           print('Request failed with status: ${response.statusCode}');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -290,6 +331,9 @@ class _SignInState extends State<SignIn> {
         }
       }
     } on FirebaseAuthException catch (e) {
+      setState(() {
+        loginLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Center(

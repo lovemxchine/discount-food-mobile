@@ -9,6 +9,7 @@ class Shopdetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
           'รายละเอียดร้านอาหาร',
