@@ -148,6 +148,7 @@ class _HomepageState extends State<Homepage> {
       }
     } catch (e) {
       print('Error: $e');
+
     }
   }
 
@@ -182,10 +183,17 @@ class _HomepageState extends State<Homepage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'ชาญณรงค์ ชาญเฌอ',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      userProfileData != null
+                          ? Text(
+                              '${userProfileData!['fname']} ${userProfileData!['lname']}',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            )
+                          : Text(
+                              'กำลังโหลด...',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            ),
                       SizedBox(height: 5),
                       Container(
                         padding: const EdgeInsets.symmetric(

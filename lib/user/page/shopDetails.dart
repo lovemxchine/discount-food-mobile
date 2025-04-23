@@ -51,6 +51,10 @@ class _ShopDetailsState extends State<ShopDetails> {
                     //     },
                     //   ),
                     // ),
+                    Container(
+                      height: 200,
+          
+                    ),
                     SizedBox(height: 16),
                     Text(
                       widget.shopData['name'],
