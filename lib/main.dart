@@ -54,7 +54,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _setApiUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('apiUrl', '3.107.193.86:3000');
+    await prefs.setString('apiUrl', '3.27.248.183:3000');
   }
 
   @override

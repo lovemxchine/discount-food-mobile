@@ -17,7 +17,7 @@ class Shopdetail extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); 
+            Navigator.pop(context);
           },
         ),
       ),
@@ -29,22 +29,6 @@ class Shopdetail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  
-                  Container(
-                    height: 200,
-                    child: GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(52.4862, -1.8904), // ตำแหน่งที่อยู่
-                        zoom: 14,
-                      ),
-                      markers: {
-                        Marker(
-                          markerId: MarkerId('storeLocation'),
-                          position: LatLng(52.4862, -1.8904),
-                        ),
-                      },
-                    ),
-                  ),
                   SizedBox(height: 16),
                   Text(
                     'Tops market - เซ็นทรัลเวสเกต',
@@ -157,14 +141,11 @@ class Shopdetail extends StatelessWidget {
                       context: context,
                       builder: (BuildContext context) {
                         return Dialog(
-                          backgroundColor:
-                              Colors.white, 
+                          backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                8), 
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child:
-                              Reportshop(), 
+                          child: Reportshop(),
                         );
                       },
                     );
@@ -204,14 +185,14 @@ class Reportshop extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Column(
-        mainAxisSize: MainAxisSize.min, 
+        mainAxisSize: MainAxisSize.min,
         children: [
           Align(
             alignment: Alignment.topRight,
             child: IconButton(
               icon: Icon(Icons.close_rounded, color: Colors.black),
               onPressed: () {
-                Navigator.of(context).pop(); 
+                Navigator.of(context).pop();
               },
             ),
           ),
@@ -234,13 +215,14 @@ class Reportshop extends StatelessWidget {
                   )),
             ),
           ),
-          
           Text(
             "เนื้อหา",
             style: TextStyle(
                 fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
           ),
-          SizedBox(height: 4,),
+          SizedBox(
+            height: 4,
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: TextField(
