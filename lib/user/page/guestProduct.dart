@@ -45,14 +45,13 @@ class _GuestProductInShopState extends State<GuestProductInShop> {
   initState() {
     super.initState();
     initFetch();
-
   }
 
   Future<void> fetchProduct() async {
     // Uri url = "http://52.65.210.113:3000/" as Uri;
     print(widget.shopData['shopkeeperUid']);
     final url = Uri.parse(
-        "http://$pathAPI/shop/${widget.shopData['shopkeeperUid']}/getAllProduct");
+        "http://$pathAPI/shop/${widget.shopData['shopkeeperUid']}/getAvailableProduct");
     var response = await http.get(
       url,
     );

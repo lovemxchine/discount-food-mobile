@@ -1,22 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/reportShop.dart';
+import 'package:latlong2/latlong.dart'; // for LatLng
 
-class Shopdetail extends StatelessWidget {
+class Shopdetail extends StatefulWidget {
   const Shopdetail({super.key, required Map<String, dynamic> shopData});
 
   @override
+  State<Shopdetail> createState() => _ShopdetailState();
+}
+
+class _ShopdetailState extends State<Shopdetail> {
+  @override
   Widget build(BuildContext context) {
+    late double latitude;
+    late double longitude;
+    String location = 'Unknown location';
+
+    Future<void> _getCurrentLocation() async {
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      // Check if location services are enabled
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() {
+          location = 'Location services are disabled.';
+        });
+        return;
+      }
+
+      // Check permissions
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            location = 'Location permission denied.';
+          });
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          location = 'Location permission permanently denied.';
+        });
+        return;
+      }
+
+      // Get location
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        location = 'Lat: ${position.latitude}, Lng: ${position.longitude}';
+      });
+      print('Current location: $location');
+    }
+
+    initState() {
+      super.initState();
+      _getCurrentLocation();
+    }
+
+    // void _refreshMap() {
+    //   setState(() {
+    //     // Update map data, e.g., move the center or update zoom
+    //     latitude = 13.7700;
+    //     longitude = 100.5100;
+    //   });
+    // }
+
+    if (location != 'Unknown location') {
+      List<String> latLng = location.split(',');
+      latitude = double.parse(latLng[0].split(': ')[1]);
+      longitude = double.parse(latLng[1].split(': ')[1]);
+    } else {
+      latitude = 0.0;
+      longitude = 0.0;
+    }
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'รายละเอียดร้านอาหาร',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -30,6 +106,44 @@ class Shopdetail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Container(
+                      height: 200,
+                      child: FlutterMap(
+                        options: MapOptions(
+                          initialCenter:
+                              LatLng(latitude, longitude), // ตำแหน่งที่อยู่
+                          maxZoom: 15.0,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                            subdomains: ['a', 'b', 'c'],
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: LatLng(latitude, longitude),
+                                width: 40,
+                                height: 40,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.location_on,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      )),
                   SizedBox(height: 16),
                   Text(
                     'Tops market - เซ็นทรัลเวสเกต',
@@ -142,25 +256,38 @@ class Shopdetail extends StatelessWidget {
                       context: context,
                       builder: (BuildContext context) {
                         return Dialog(
+                          insetPadding: const EdgeInsets.all(16),
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Reportshop(),
+                          child: AnimatedPadding(
+                            padding: EdgeInsets.only(
+                              bottom:
+                                  MediaQuery.of(context).viewInsets.bottom + 16,
+                              top: 16,
+                              left: 16,
+                              right: 16,
+                            ),
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.decelerate,
+                            child: Reportshop(),
+                          ),
                         );
                       },
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 34, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 34, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 5,
                     shadowColor: Colors.black,
                   ),
-                  child: Text(
+                  child: const Text(
                     'รายงาน',
                     style: TextStyle(
                       fontSize: 12,
@@ -191,13 +318,13 @@ class Reportshop extends StatelessWidget {
           Align(
             alignment: Alignment.topRight,
             child: IconButton(
-              icon: Icon(Icons.close_rounded, color: Colors.black),
+              icon: const Icon(Icons.close_rounded, color: Colors.black),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
           ),
-          Text(
+          const Text(
             "ชื่อหัวข้อ",
             style: TextStyle(
                 fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
@@ -208,7 +335,7 @@ class Reportshop extends StatelessWidget {
               decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                     color: Colors.grey,
                   ),
                   border: OutlineInputBorder(
@@ -216,12 +343,12 @@ class Reportshop extends StatelessWidget {
                   )),
             ),
           ),
-          Text(
+          const Text(
             "เนื้อหา",
             style: TextStyle(
                 fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
           ),
-          SizedBox(
+          const SizedBox(
             height: 4,
           ),
           Padding(
@@ -232,7 +359,7 @@ class Reportshop extends StatelessWidget {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white,
-                hintStyle: TextStyle(
+                hintStyle: const TextStyle(
                   color: Colors.grey,
                 ),
                 border: OutlineInputBorder(
@@ -241,17 +368,17 @@ class Reportshop extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {},
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
-              padding: EdgeInsets.symmetric(horizontal: 44, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text(
+            child: const Text(
               "ยืนยัน",
               style: TextStyle(
                   fontSize: 14,
@@ -259,7 +386,7 @@ class Reportshop extends StatelessWidget {
                   color: Colors.white),
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
         ],
       ),
     );
