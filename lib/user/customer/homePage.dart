@@ -21,6 +21,7 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   List<dynamic> listProducts = [];
   List<dynamic> filteredItems = [];
+  Map<String, dynamic>? currentUser;
   TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
   var pathAPI = '';
@@ -53,6 +54,7 @@ class _HomepageState extends State<Homepage> {
   Future<void> initFetch() async {
     await fetchUrl();
     await _fetchData();
+    await fetchCurrentUser();
   }
 
   Future<void> fetchUrl() async {
@@ -92,6 +94,54 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
+  Future<String?> getUID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    print("UID จาก SharedPreferences: ${prefs.getString('user_uid')}");
+    return prefs.getString('user_uid');
+  }
+
+  Future<void> fetchCurrentUser() async {
+    final String? uid = await getUID();
+
+    if (uid == null) {
+      print("ไม่พบ UID ใน SharedPreferences");
+      return;
+    }
+
+    final url = Uri.parse("http://$pathAPI/admin/customer");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        if (responseData['status'] == 'success') {
+          List<dynamic> customers = responseData['data'];
+
+          final user = customers.firstWhere(
+            (user) => user['id'] == uid,
+            orElse: () => null,
+          );
+
+          if (user != null) {
+            setState(() {
+              currentUser = user;
+            });
+          } else {
+            print("ไม่พบผู้ใช้ที่ตรงกับ uid: $uid");
+          }
+        } else {
+          print("โหลดข้อมูลไม่สำเร็จ: ${responseData['message']}");
+        }
+      } else {
+        print("Status code ไม่ใช่ 200: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("เกิดข้อผิดพลาด: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -123,10 +173,17 @@ class _HomepageState extends State<Homepage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'ชาญณรงค์ ชาญเฌอ',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      currentUser != null
+                          ? Text(
+                              '${currentUser!['fname']} ${currentUser!['lname']}',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            )
+                          : Text(
+                              'กำลังโหลด...',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            ),
                       SizedBox(height: 5),
                       Container(
                         padding: const EdgeInsets.symmetric(

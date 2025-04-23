@@ -38,18 +38,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                     // แผนที่ (คุณสามารถใช้ Google Maps API)
                     Container(
                       height: 200,
-                      child: GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(52.4862, -1.8904), // ตำแหน่งที่อยู่
-                          zoom: 14,
-                        ),
-                        markers: {
-                          Marker(
-                            markerId: MarkerId('storeLocation'),
-                            position: LatLng(52.4862, -1.8904),
-                          ),
-                        },
-                      ),
+          
                     ),
                     SizedBox(height: 16),
                     Text(

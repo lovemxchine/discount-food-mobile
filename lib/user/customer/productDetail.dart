@@ -115,7 +115,7 @@ class _ProductDetailState extends State<ProductDetail> {
                                   ),
                                 ),
                                 Text(
-                                  'จำนวนคงเหลือ ${widget.shopData['quantity']}',
+                                  'จำนวนคงเหลือ ${widget.shopData['stock']}',
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.black54,
