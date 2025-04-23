@@ -148,7 +148,6 @@ class _HomepageState extends State<Homepage> {
       }
     } catch (e) {
       print('Error: $e');
-
     }
   }
 
@@ -375,6 +374,15 @@ class _HomepageState extends State<Homepage> {
                               ), //นี่
                             ), //นี้
                     ), //บรรทัดนี้
+                    // invisible product
+                    Container(
+                      height: 75,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    )
                   ],
                 ),
               ),

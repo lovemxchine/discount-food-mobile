@@ -49,9 +49,9 @@ class _GuestProductInShopState extends State<GuestProductInShop> {
 
   Future<void> fetchProduct() async {
     // Uri url = "http://52.65.210.113:3000/" as Uri;
-    print(widget.shopData['shopkeeperUid']);
+    print(widget.shopData['uid']);
     final url = Uri.parse(
-        "http://$pathAPI/shop/${widget.shopData['shopkeeperUid']}/getAvailableProduct");
+        "http://$pathAPI/shop/${widget.shopData['uid']}/getAvailableProduct");
     var response = await http.get(
       url,
     );

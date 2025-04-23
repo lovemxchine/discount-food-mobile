@@ -46,7 +46,7 @@ class _ProductDetailState extends State<ProductDetail> {
 
   Future<void> fetchProduct() async {
     final url = Uri.parse(
-        "http://$pathAPI/shop/${widget.shopData['shopkeeperUid']}/getAvailableProduct");
+        "http://$pathAPI/shop/${widget.shopData['uid']}/getAvailableProduct");
     var response = await http.get(url);
     final responseData = jsonDecode(response.body);
     setState(() {
