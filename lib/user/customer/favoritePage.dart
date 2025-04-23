@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:mobile/user/customer/productInshop.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class FavoritePage extends StatefulWidget {
   @override
@@ -6,6 +10,152 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
+  List<dynamic> listProducts = [];
+  List<dynamic> filteredItems = [];
+  Map<String, dynamic>? userProfileData;
+  TextEditingController searchController = TextEditingController();
+  bool _isLoading = false;
+  var pathAPI = '';
+  //int _currentIndex = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    initFetch();
+    searchController.addListener(filterItems);
+  }
+
+  @override
+  void dispose() {
+    searchController.removeListener(filterItems);
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void filterItems() {
+    setState(() {
+      filteredItems = listProducts
+          .where((item) => item['name']
+              .toLowerCase()
+              .contains(searchController.text.toLowerCase()))
+          .toList();
+    });
+  }
+
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await _fetchData();
+    await _fetchProfile();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print(pathAPI);
+  }
+
+  Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    String? uid = await getUID();
+    if (uid == null) {
+      print("UID is null");
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final url =
+        Uri.parse("http://$pathAPI/customer/fetchFavoriteShop?uid=$uid");
+
+    try {
+      var response = await http.get(url);
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      print(responseData);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          listProducts = responseData['data'];
+          filteredItems = listProducts;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        print("Fetch failed: ${response.statusCode}");
+      }
+    } catch (e) {
+      print('Error: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<String?> getUID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_uid');
+  }
+
+  Future<void> _fetchProfile() async {
+    String? uid = await getUID();
+    final url = Uri.parse("http://$pathAPI/customer/profileDetail?uid=$uid");
+
+    try {
+      var response = await http.get(url);
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+
+      if (response.statusCode == 200) {
+        setState(() {
+          userProfileData = responseData['data'];
+          _isLoading = false;
+        });
+        print(userProfileData);
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        // Handle error
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> updateFav(String shopUID) async {
+    String? uid = await getUID();
+    final url = Uri.parse("http://$pathAPI/customer/favoriteShop");
+
+    try {
+      var response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'shopUid': shopUID, 'uid': uid}),
+      );
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+
+      if (response.statusCode == 200) {
+        setState(() {
+          userProfileData = responseData['data'];
+        });
+        print(userProfileData);
+      } else {
+        // Handle error
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -41,10 +191,17 @@ class _FavoritePageState extends State<FavoritePage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'ชาญณรงค์ ชาญเฌอ',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      userProfileData != null
+                          ? Text(
+                              '${userProfileData!['fname']} ${userProfileData!['lname']}',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            )
+                          : Text(
+                              'กำลังโหลด...',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            ),
                       const SizedBox(height: 5),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -91,99 +248,107 @@ class _FavoritePageState extends State<FavoritePage> {
                     ),
                     const SizedBox(height: 20),
                     Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            for (int i = 0; i < 7; i++)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 20),
-                                child: InkWell(
-                                  onTap: () {
-                                    // เผื่อกดดูสินค้า
-                                  },
-                                  child: Container(
-                                    height: 90,
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Colors.black26,
-                                          blurRadius: 1,
-                                          offset: Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: 80,
-                                          height: 80,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey,
-                                            image: const DecorationImage(
-                                              image: AssetImage(
-                                                  'assets/images/alt.png'),
-                                              fit: BoxFit.cover,
+                      child: _isLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  ...filteredItems.map((item) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 20),
+                                      child: InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ProductInShop(
+                                                shopData: item,
+                                              ),
                                             ),
+                                          );
+                                        },
+                                        child: Container(
+                                          height: 90,
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
                                             borderRadius:
-                                                BorderRadius.circular(5),
+                                                BorderRadius.circular(12),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                color: Colors.black26,
+                                                blurRadius: 1,
+                                                offset: Offset(0, 4),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                        const SizedBox(width: 20),
-                                        const Expanded(
-                                          child: Column(
+                                          child: Row(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                'ชื่อร้านค้า',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
+                                              Container(
+                                                width: 80,
+                                                height: 80,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey,
+                                                  image: DecorationImage(
+                                                    image: NetworkImage(item[
+                                                                'imgUrl']
+                                                            ['shopUrl'] ??
+                                                        'https://via.placeholder.com/150'),
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
                                                 ),
                                               ),
-                                              SizedBox(height: 5),
-                                              Text(
-                                                'ระยะเวลาเปิด - ปิด (10:00 - 22:00)',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
+                                              const SizedBox(width: 20),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      item['name'],
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    Text(
+                                                      'เวลาเปิด-ปิด: ${item['openTime'] ?? '10:00'} - ${item['closeTime'] ?? '22:00'}',
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              SizedBox(height: 5),
-                                              // Text(
-                                              //   'ระยะห่าง 1.5km',
-                                              //   style: TextStyle(
-                                              //     fontSize: 12,
-                                              //     color: Colors.black,
-                                              //   ),
-                                              // ),
+                                              const Icon(Icons.favorite,
+                                                  color: Colors.red),
                                             ],
                                           ),
                                         ),
-                                        const Icon(Icons.favorite,
-                                            color: Colors.red),
-                                      ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                  Container(
+                                    height: 90,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                  ),
-                                ),
+                                  )
+                                ],
                               ),
-                            Container(
-                              height: 90,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
+                            ),
                     ),
                   ],
                 ),
