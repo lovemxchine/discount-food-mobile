@@ -46,7 +46,7 @@ class _ProductDetailState extends State<ProductDetail> {
 
   Future<void> fetchProduct() async {
     final url = Uri.parse(
-        "http://$pathAPI/shop/${widget.shopData['shopkeeperUid']}/getAllProduct");
+        "http://$pathAPI/shop/${widget.shopData['shopkeeperUid']}/getAvailableProduct");
     var response = await http.get(url);
     final responseData = jsonDecode(response.body);
     setState(() {
@@ -115,7 +115,7 @@ class _ProductDetailState extends State<ProductDetail> {
                                   ),
                                 ),
                                 Text(
-                                  'จำนวนคงเหลือ ${widget.shopData['quantity']}',
+                                  'จำนวนคงเหลือ ${widget.shopData['stock']}',
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.black54,

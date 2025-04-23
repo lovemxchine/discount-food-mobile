@@ -54,6 +54,8 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
   File? ShopImg;
   File? CertificateImg;
 
+  bool regisLoading = false;
+
   // shop place
   String? selectedProvince;
   String? selectedDistrict;
@@ -171,6 +173,14 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     return format;
   }
 
+  String formatTimeOfDay2(TimeOfDay? time) {
+    // final format = MaterialLocalizations.of(context).formatTimeOfDay(time);
+    String formattedTime = "${time?.hour.toString().padLeft(2, '0')}:"
+        "${time?.minute.toString().padLeft(2, '0')}";
+    print("test $formattedTime");
+    return formattedTime;
+  }
+
   Future<void> _selectOpenTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -194,7 +204,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     if (picked != null && picked != openTime) {
       setState(() {
         openTime = picked;
-        print(openTime);
+        print(formatTimeOfDay2(openTime));
       });
     }
   }
@@ -222,6 +232,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     if (picked != null && picked != closeTime) {
       setState(() {
         closeTime = picked;
+        print(formatTimeOfDay2(closeTime));
         print(closeTime);
       });
     }
@@ -435,6 +446,9 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     // User? user;
     try {
       User? user = await _auth.signUpWithEmailAndPassword(email, password);
+      setState(() {
+        regisLoading = true;
+      });
       if (user != null) {
         print('Sign up success');
         print(user);
@@ -485,8 +499,8 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
         request.fields['shopkeeperLocation[postcode]'] =
             postcodeShopkeeperController.text;
 
-        request.fields['openAt'] = openTime.toString();
-        request.fields['closeAt'] = closeTime.toString();
+        request.fields['openAt'] = formatTimeOfDay2(openTime);
+        request.fields['closeAt'] = formatTimeOfDay2(closeTime);
 
         // Add image files
         List<http.MultipartFile> imageFiles = [];
@@ -519,13 +533,22 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
 
         // Read the response
         if (response.statusCode == 200) {
+          setState(() {
+            regisLoading = false;
+          });
           print('Uploaded successfully');
           Navigator.pushNamed(context, '/signIn');
         } else {
+          setState(() {
+            regisLoading = false;
+          });
           print('Failed to upload');
         }
       }
     } on FirebaseAuthException catch (e) {
+      setState(() {
+        regisLoading = false;
+      });
       _auth.handleFirebaseAuthError(e);
       print(e.message);
     }
@@ -535,285 +558,87 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
   Widget build(BuildContext context) {
     // ignore: deprecated_member_use
     return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
-          leading: currentPage == 1
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () {
-                    _pageController.animateToPage(
-                      0,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeIn,
-                    );
-                  },
-                )
-              : null,
-        ),
-        body: PageView(
-          // scrollDirection: Axis.vertical,
-          controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            SingleChildScrollView(
-              child: Container(
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                  child: Center(
-                      child: Padding(
-                    padding: const EdgeInsets.only(left: 40, right: 40),
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text('ตั้งค่าอีเมล์และรหัสผ่าน',
-                                style: TextStyle(fontSize: 24)),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        const Text(
-                          'คุณสามารถใช้สิ่งนี้เพื่อเข้าสู่ระบบ เราจะแนะนำคุณตลอด\nกระบวนการเริ่มต้นใช้งานหลังจากบัญชีของคุณได้รับ\nแล้วสร้าง.',
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 134, 134, 134)),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Container(
-                          width: 300,
-                          height: 40,
-                          child: buildBorderTextField(emailController, 'อีเมล',
-                              'name@example.com', false),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Container(
-                          width: 300,
-                          height: 40,
-                          child: buildBorderTextField(passwordController,
-                              'รหัสผ่าน', 'ป้อนรหัสผ่านที่ปลอดภัย', true),
-                        ),
-                        const SizedBox(
-                          height: 380,
-                        ),
-                        SizedBox(
-                          width: 230,
-                          child: ElevatedButton(
-                            onPressed: firstPageValidate ? nextPage : null,
-                            style: ElevatedButton.styleFrom(
-                              shadowColor: Colors.transparent,
-                              backgroundColor:
-                                  firstPageValidate ? Colors.blue : Colors.grey,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            child: Text(
-                              'ไปหน้าถัดไป',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: GoogleFonts.mitr().fontFamily,
-                                  color: firstPageValidate
-                                      ? Colors.white
-                                      : const Color.fromARGB(255, 56, 56, 56)),
-                            ),
-                          ),
-                        ),
-                        // const ClipRect(
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.center,
-                        //     children: [
-                        //       Icon(
-                        //         Icons.arrow_downward,
-                        //         color: Colors.grey,
-                        //       ),
-                        //       SizedBox(
-                        //         width: 10,
-                        //       ),
-                        //       Text(
-                        //         'ไปหน้าถัดไป',
-                        //         style:
-                        //             TextStyle(fontSize: 20, color: Colors.grey),
-                        //       ),
-                        //       Icon(
-                        //         Icons.arrow_downward,
-                        //         color: Colors.transparent,
-                        //       ),
-                        //     ],
-                        //   ),
-                        // )
-                      ],
-                    ),
-                  ))),
+        onWillPop: _onWillPop,
+        child: Stack(children: [
+          Scaffold(
+            resizeToAvoidBottomInset: true,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              leading: currentPage == 1
+                  ? IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: () {
+                        _pageController.animateToPage(
+                          0,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeIn,
+                        );
+                      },
+                    )
+                  : null,
             ),
-            SingleChildScrollView(
-              child: Container(
-                color: Colors.white,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 40, right: 40),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20),
-                        const Text(
-                          'ข้อมูลร้านค้า',
-                          style: TextStyle(
-                            fontSize: 24,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'ข้อมูลของผู้ดูแลร้านค้า ไว้ติดต่อร้านค้ากรณีที่เกิดปัญหา',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 20),
-                        buildUnderlineTextField(shopNameController, 'ชื่อร้าน',
-                            'ชื่อร้าน', false, false),
-                        const SizedBox(height: 16),
-                        buildUnderlineTextField(
-                            branchController,
-                            'ชื่อสาขา / ย่าน (ถ้ามี)',
-                            'ชื่อสาขา',
-                            false,
-                            false),
-                        const SizedBox(height: 16),
-                        Row(
+            body: PageView(
+              // scrollDirection: Axis.vertical,
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                SingleChildScrollView(
+                  child: Container(
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                      child: Center(
+                          child: Padding(
+                        padding: const EdgeInsets.only(left: 40, right: 40),
+                        child: Column(
                           children: [
-                            const Text('ที่อยู่ร้าน'),
-                            Spacer(),
-                            Text(pinMap ? 'ปักหมุดแล้ว' : 'ยังไม่ปักหมุด',
-                                style: TextStyle(
-                                    color: pinMap ? Colors.green : Colors.red)),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 60,
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SelectMapLocate()),
-                              );
-                              print(result);
-                              setState(() {
-                                if (result != null) {
-                                  googleLocate = result;
-                                  pinMap = true;
-                                }
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFD1D1D1)),
-                              elevation: 1,
-                              shadowColor: Colors.black.withOpacity(0.1),
-                              backgroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
+                            const SizedBox(
+                              height: 20,
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Icon(Icons.location_on_outlined,
-                                    color: Colors.grey[600], size: 20),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'ปักหมุดที่ตั้งร้าน',
-                                  style: TextStyle(
-                                    fontFamily: GoogleFonts.mitr().fontFamily,
-                                    color: Colors.grey[800],
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const Icon(Icons.location_on_outlined,
-                                    color: Colors.transparent, size: 20),
+                                Text('ตั้งค่าอีเมล์และรหัสผ่าน',
+                                    style: TextStyle(fontSize: 24)),
                               ],
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        buildUnderlineTextField(
-                            placeController,
-                            'เลขที่อยู่ร้าน หรือ ข้อมูลสถานที่ตั้งร้าน (โดยละเอียด)',
-                            'กรอกเลขที่บ้านพร้อมชื่อถนน หรืออสถานที่ใกล้เคียง',
-                            false,
-                            false),
-                        const SizedBox(height: 16),
-                        SelectOption(
-                          label: "จังหวัด",
-                          options: provinceToDistricts.keys.toList(),
-                          selectedValue: selectedProvince ?? '',
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedProvince = newValue!;
-                              selectedDistrict =
-                                  provinceToDistricts[selectedProvince]!.first;
-                              selectedSubDistrict =
-                                  districtToSubDistricts[selectedDistrict]!
-                                      .first;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        if (selectedProvince != null)
-                          SelectOption(
-                            label: "อำเภอ / เขต",
-                            options: provinceToDistricts[selectedProvince]!,
-                            selectedValue: selectedDistrict ?? '',
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedDistrict = newValue!;
-                                selectedSubDistrict =
-                                    districtToSubDistricts[selectedDistrict]!
-                                        .first;
-                              });
-                            },
-                          ),
-                        const SizedBox(height: 16),
-                        if (selectedProvince != null)
-                          SelectOption(
-                            label: "ตำบล / แขวง",
-                            options: districtToSubDistricts[selectedDistrict]!,
-                            selectedValue: selectedSubDistrict ?? '',
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedSubDistrict = newValue!;
-                              });
-                            },
-                          ),
-                        const SizedBox(height: 16),
-                        buildUnderlineTextField(postcodeController,
-                            'รหัสไปรษณีย์', 'รหัสไปรษณีย์', false, false),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            const Text(
+                              'คุณสามารถใช้สิ่งนี้เพื่อเข้าสู่ระบบ เราจะแนะนำคุณตลอด\nกระบวนการเริ่มต้นใช้งานหลังจากบัญชีของคุณได้รับ\nแล้วสร้าง.',
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 134, 134, 134)),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Container(
+                              width: 300,
+                              height: 40,
+                              child: buildBorderTextField(emailController,
+                                  'อีเมล', 'name@example.com', false),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Container(
+                              width: 300,
+                              height: 40,
+                              child: buildBorderTextField(passwordController,
+                                  'รหัสผ่าน', 'ป้อนรหัสผ่านที่ปลอดภัย', true),
+                            ),
+                            const SizedBox(
+                              height: 380,
+                            ),
                             SizedBox(
-                              width: 280,
+                              width: 230,
                               child: ElevatedButton(
-                                onPressed: secondPageValidate ? nextPage : null,
+                                onPressed: firstPageValidate ? nextPage : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: secondPageValidate
+                                  shadowColor: Colors.transparent,
+                                  backgroundColor: firstPageValidate
                                       ? Colors.blue
-                                      : const Color.fromARGB(
-                                          135, 199, 199, 199),
+                                      : Colors.grey,
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
@@ -821,250 +646,392 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                                   ),
                                 ),
                                 child: Text(
-                                  secondPageValidate
-                                      ? 'ดำเนินการต่อ'
-                                      : 'กรุณากรอกข้อมูลให้ครบ',
+                                  'ไปหน้าถัดไป',
                                   style: TextStyle(
-                                      color: secondPageValidate
+                                      fontSize: 16,
+                                      fontFamily: GoogleFonts.mitr().fontFamily,
+                                      color: firstPageValidate
                                           ? Colors.white
                                           : const Color.fromARGB(
-                                              255, 60, 60, 60),
-                                      fontSize: 16),
+                                              255, 56, 56, 56)),
                                 ),
                               ),
+                            ),
+                            // const ClipRect(
+                            //   child: Row(
+                            //     mainAxisAlignment: MainAxisAlignment.center,
+                            //     children: [
+                            //       Icon(
+                            //         Icons.arrow_downward,
+                            //         color: Colors.grey,
+                            //       ),
+                            //       SizedBox(
+                            //         width: 10,
+                            //       ),
+                            //       Text(
+                            //         'ไปหน้าถัดไป',
+                            //         style:
+                            //             TextStyle(fontSize: 20, color: Colors.grey),
+                            //       ),
+                            //       Icon(
+                            //         Icons.arrow_downward,
+                            //         color: Colors.transparent,
+                            //       ),
+                            //     ],
+                            //   ),
+                            // )
+                          ],
+                        ),
+                      ))),
+                ),
+                SingleChildScrollView(
+                  child: Container(
+                    color: Colors.white,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 40, right: 40),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 20),
+                            const Text(
+                              'ข้อมูลร้านค้า',
+                              style: TextStyle(
+                                fontSize: 24,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'ข้อมูลของผู้ดูแลร้านค้า ไว้ติดต่อร้านค้ากรณีที่เกิดปัญหา',
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 20),
+                            buildUnderlineTextField(shopNameController,
+                                'ชื่อร้าน', 'ชื่อร้าน', false, false),
+                            const SizedBox(height: 16),
+                            buildUnderlineTextField(
+                                branchController,
+                                'ชื่อสาขา / ย่าน (ถ้ามี)',
+                                'ชื่อสาขา',
+                                false,
+                                false),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                const Text('ที่อยู่ร้าน'),
+                                Spacer(),
+                                Text(pinMap ? 'ปักหมุดแล้ว' : 'ยังไม่ปักหมุด',
+                                    style: TextStyle(
+                                        color: pinMap
+                                            ? Colors.green
+                                            : Colors.red)),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 60,
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            SelectMapLocate()),
+                                  );
+                                  print(result);
+                                  setState(() {
+                                    if (result != null) {
+                                      googleLocate = result;
+                                      pinMap = true;
+                                    }
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  side: const BorderSide(
+                                      color: Color(0xFFD1D1D1)),
+                                  elevation: 1,
+                                  shadowColor: Colors.black.withOpacity(0.1),
+                                  backgroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.location_on_outlined,
+                                        color: Colors.grey[600], size: 20),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'ปักหมุดที่ตั้งร้าน',
+                                      style: TextStyle(
+                                        fontFamily:
+                                            GoogleFonts.mitr().fontFamily,
+                                        color: Colors.grey[800],
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const Icon(Icons.location_on_outlined,
+                                        color: Colors.transparent, size: 20),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            buildUnderlineTextField(
+                                placeController,
+                                'เลขที่อยู่ร้าน หรือ ข้อมูลสถานที่ตั้งร้าน (โดยละเอียด)',
+                                'กรอกเลขที่บ้านพร้อมชื่อถนน หรืออสถานที่ใกล้เคียง',
+                                false,
+                                false),
+                            const SizedBox(height: 16),
+                            SelectOption(
+                              label: "จังหวัด",
+                              options: provinceToDistricts.keys.toList(),
+                              selectedValue: selectedProvince ?? '',
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  selectedProvince = newValue!;
+                                  selectedDistrict =
+                                      provinceToDistricts[selectedProvince]!
+                                          .first;
+                                  selectedSubDistrict =
+                                      districtToSubDistricts[selectedDistrict]!
+                                          .first;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            if (selectedProvince != null)
+                              SelectOption(
+                                label: "อำเภอ / เขต",
+                                options: provinceToDistricts[selectedProvince]!,
+                                selectedValue: selectedDistrict ?? '',
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedDistrict = newValue!;
+                                    selectedSubDistrict =
+                                        districtToSubDistricts[
+                                                selectedDistrict]!
+                                            .first;
+                                  });
+                                },
+                              ),
+                            const SizedBox(height: 16),
+                            if (selectedProvince != null)
+                              SelectOption(
+                                label: "ตำบล / แขวง",
+                                options:
+                                    districtToSubDistricts[selectedDistrict]!,
+                                selectedValue: selectedSubDistrict ?? '',
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedSubDistrict = newValue!;
+                                  });
+                                },
+                              ),
+                            const SizedBox(height: 16),
+                            buildUnderlineTextField(postcodeController,
+                                'รหัสไปรษณีย์', 'รหัสไปรษณีย์', false, false),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 280,
+                                  child: ElevatedButton(
+                                    onPressed:
+                                        secondPageValidate ? nextPage : null,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: secondPageValidate
+                                          ? Colors.blue
+                                          : const Color.fromARGB(
+                                              135, 199, 199, 199),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      secondPageValidate
+                                          ? 'ดำเนินการต่อ'
+                                          : 'กรุณากรอกข้อมูลให้ครบ',
+                                      style: TextStyle(
+                                          color: secondPageValidate
+                                              ? Colors.white
+                                              : const Color.fromARGB(
+                                                  255, 60, 60, 60),
+                                          fontSize: 16),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            SingleChildScrollView(
-              child: Container(
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 40, right: 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      const Text(
-                        'ติดต่อร้านค้า และ เวลาเปิดปิด',
-                        style: TextStyle(
-                          fontSize: 24,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'ลูกค้าอาจติดต่อคุณไปทางเบอร์โทรศัพท์หรืออีเมลนี้',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'และ เวลาเปิดปิดร้านค้าของคุณ',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 10),
-                      buildUnderlineTextField(telShopkeeperController,
-                          'เบอร์โทรศัพท์', 'เบอร์โทรศัพท์', false, false),
-                      const SizedBox(height: 16),
-                      buildUnderlineTextField(
-                          emailController, 'อีเมล', 'อีเมล', false, true),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                SingleChildScrollView(
+                  child: Container(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 40, right: 40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
+                          const SizedBox(height: 20),
+                          const Text(
+                            'ติดต่อร้านค้า และ เวลาเปิดปิด',
+                            style: TextStyle(
+                              fontSize: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'ลูกค้าอาจติดต่อคุณไปทางเบอร์โทรศัพท์หรืออีเมลนี้',
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'และ เวลาเปิดปิดร้านค้าของคุณ',
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 10),
+                          buildUnderlineTextField(telShopkeeperController,
+                              'เบอร์โทรศัพท์', 'เบอร์โทรศัพท์', false, false),
+                          const SizedBox(height: 16),
+                          buildUnderlineTextField(
+                              emailController, 'อีเมล', 'อีเมล', false, true),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Text(
-                                'เวลาเปิดร้าน',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              if (openTime != null)
-                                Text(
-                                  '${openTime!.format(context)}',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              if (openTime == null)
-                                Text(
-                                  '         ',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              Container(
-                                width: 100,
-                                child: ElevatedButton(
-                                  onPressed: () => _selectOpenTime(context),
-                                  child: Text(
+                              Column(
+                                children: [
+                                  Text(
                                     'เวลาเปิดร้าน',
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(fontSize: 16),
                                   ),
-                                  style: ElevatedButton.styleFrom(
-                                    shadowColor: Colors.transparent,
-                                    backgroundColor: firstPageValidate
-                                        ? Colors.green
-                                        : Colors.grey,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
+                                  if (openTime != null)
+                                    Text(
+                                      '${openTime!.format(context)}',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  if (openTime == null)
+                                    Text(
+                                      '         ',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  Container(
+                                    width: 100,
+                                    child: ElevatedButton(
+                                      onPressed: () => _selectOpenTime(context),
+                                      child: Text(
+                                        'เวลาเปิดร้าน',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        shadowColor: Colors.transparent,
+                                        backgroundColor: firstPageValidate
+                                            ? Colors.green
+                                            : Colors.grey,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    'เวลาปิดร้าน',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  if (closeTime != null)
+                                    Text(
+                                      '${closeTime!.format(context)}',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  if (closeTime == null)
+                                    Text(
+                                      '         ',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  Container(
+                                    width: 100,
+                                    child: ElevatedButton(
+                                      onPressed: () =>
+                                          _selectCloseTime(context),
+                                      child: Text(
+                                        'เวลาปิดร้าน',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        shadowColor: Colors.transparent,
+                                        backgroundColor: firstPageValidate
+                                            ? Colors.red
+                                            : Colors.grey,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                          Column(
-                            children: [
-                              Text(
-                                'เวลาปิดร้าน',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              if (closeTime != null)
-                                Text(
-                                  '${closeTime!.format(context)}',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              if (closeTime == null)
-                                Text(
-                                  '         ',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              Container(
-                                width: 100,
-                                child: ElevatedButton(
-                                  onPressed: () => _selectCloseTime(context),
-                                  child: Text(
-                                    'เวลาปิดร้าน',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    shadowColor: Colors.transparent,
-                                    backgroundColor: firstPageValidate
-                                        ? Colors.red
-                                        : Colors.grey,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
+                          const SizedBox(height: 300),
+                          Center(
+                            child: SizedBox(
+                              width: 230,
+                              child: ElevatedButton(
+                                onPressed: firstPageValidate ? nextPage : null,
+                                style: ElevatedButton.styleFrom(
+                                  shadowColor: Colors.transparent,
+                                  backgroundColor: firstPageValidate
+                                      ? Colors.blue
+                                      : Colors.grey,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
                                   ),
                                 ),
+                                child: Text(
+                                  'ไปหน้าถัดไป',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontFamily: GoogleFonts.mitr().fontFamily,
+                                      color: firstPageValidate
+                                          ? Colors.white
+                                          : const Color.fromARGB(
+                                              255, 56, 56, 56)),
+                                ),
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 300),
-                      Center(
-                        child: SizedBox(
-                          width: 230,
-                          child: ElevatedButton(
-                            onPressed: firstPageValidate ? nextPage : null,
-                            style: ElevatedButton.styleFrom(
-                              shadowColor: Colors.transparent,
-                              backgroundColor:
-                                  firstPageValidate ? Colors.blue : Colors.grey,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            child: Text(
-                              'ไปหน้าถัดไป',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: GoogleFonts.mitr().fontFamily,
-                                  color: firstPageValidate
-                                      ? Colors.white
-                                      : const Color.fromARGB(255, 56, 56, 56)),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 40, right: 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    const Text(
-                      'รายละเอียดร้าน',
-                      style: TextStyle(
-                        fontSize: 24,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'ใส่รูปภาพของร้านค้า สินค้าของคุณ เพื่อให้ลูกค้ารับรู้ร้านค้าของคุณ และ ทะเบียนพาณิชย์ไว้สำหรับยืนยันว่าร้านค้าของคุณเป็นร้านค้าที่ถูกต้อง ',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 24),
-                    CustomImageUploadButton(
-                        label: 'รูปหน้าปกร้าน',
-                        onPressed: () {
-                          showPicker(
-                            context,
-                          );
-                        }),
-                    const SizedBox(height: 16),
-                    CustomImageUploadButton(
-                        label: 'รูปประจำร้าน',
-                        onPressed: () {
-                          showPicker2(
-                            context,
-                          );
-                        }),
-                    const SizedBox(height: 16),
-                    CustomImageUploadButton(
-                        label: 'ใบทะเบียนพาณิชย์',
-                        onPressed: () {
-                          showPicker3(
-                            context,
-                          );
-                        }),
-                    const SizedBox(height: 166),
-                    Center(
-                      child: SizedBox(
-                        width: 230,
-                        child: ElevatedButton(
-                          onPressed: firstPageValidate ? nextPage : null,
-                          style: ElevatedButton.styleFrom(
-                            shadowColor: Colors.transparent,
-                            backgroundColor:
-                                firstPageValidate ? Colors.blue : Colors.grey,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                          ),
-                          child: Text(
-                            'ไปหน้าถัดไป',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontFamily: GoogleFonts.mitr().fontFamily,
-                                color: firstPageValidate
-                                    ? Colors.white
-                                    : const Color.fromARGB(255, 56, 56, 56)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SingleChildScrollView(
-              child: Container(
-                color: Colors.white,
-                child: Center(
+                SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 40, right: 40),
                     child: Column(
@@ -1072,109 +1039,52 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                       children: [
                         const SizedBox(height: 20),
                         const Text(
-                          'ข้อมูลผู้ดูแล',
+                          'รายละเอียดร้าน',
                           style: TextStyle(
                             fontSize: 24,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'เราจะแสดงข้อมูลต่อไปนี้ของคุณให้ลูกค้าบนแอปฯ',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text(
+                          'ใส่รูปภาพของร้านค้า สินค้าของคุณ เพื่อให้ลูกค้ารับรู้ร้านค้าของคุณ และ ทะเบียนพาณิชย์ไว้สำหรับยืนยันว่าร้านค้าของคุณเป็นร้านค้าที่ถูกต้อง ',
+                          style:
+                              TextStyle(fontSize: 14, color: Colors.grey[600]),
                         ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Container(
-                              width: 150,
-                              child: buildUnderlineTextField(
-                                  nameShopkeeperController,
-                                  'ชื่อ',
-                                  'ใส่ชื่อจริงของผู้ดูแลร้าน',
-                                  false,
-                                  false),
-                            ),
-                            SizedBox(width: 10),
-                            Container(
-                              width: 150,
-                              child: buildUnderlineTextField(
-                                  surnameShopkeeperController,
-                                  'นามสกุล ',
-                                  'ใส่นามสกุลของผู้ดูแล',
-                                  false,
-                                  false),
-                            ),
-                          ],
-                        ),
+                        const SizedBox(height: 24),
+                        CustomImageUploadButton(
+                            label: 'รูปหน้าปกร้าน',
+                            onPressed: () {
+                              showPicker(
+                                context,
+                              );
+                            }),
                         const SizedBox(height: 16),
-                        buildUnderlineTextField(nationalityShopkeeperController,
-                            'เชื้อชาติ', 'เชื้อชาติ', false, false),
-                        const SizedBox(height: 8),
-                        buildUnderlineTextField(
-                            placeShopkeeperController,
-                            'ที่อยู่อาศัย (โดยละเอียด)',
-                            'กรอกเลขที่บ้านพร้อมชื่อถนน หรืออสถานที่ใกล้เคียง',
-                            false,
-                            false),
+                        CustomImageUploadButton(
+                            label: 'รูปประจำร้าน',
+                            onPressed: () {
+                              showPicker2(
+                                context,
+                              );
+                            }),
                         const SizedBox(height: 16),
-                        SelectOption(
-                          label: "จังหวัด",
-                          options: provinceToDistricts.keys.toList(),
-                          selectedValue: selectedUserProvince ?? '',
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedUserProvince = newValue!;
-                              selectedUserDistrict =
-                                  provinceToDistricts[selectedUserProvince]!
-                                      .first;
-                              selectedUserSubDistrict =
-                                  districtToSubDistricts[selectedUserDistrict]!
-                                      .first;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        if (selectedProvince != null)
-                          SelectOption(
-                            label: "อำเภอ / เขต",
-                            options: provinceToDistricts[selectedUserProvince]!,
-                            selectedValue: selectedUserDistrict ?? '',
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedUserDistrict = newValue!;
-                                selectedUserSubDistrict =
-                                    districtToSubDistricts[
-                                            selectedUserDistrict]!
-                                        .first;
-                              });
-                            },
-                          ),
-                        const SizedBox(height: 16),
-                        if (selectedProvince != null)
-                          SelectOption(
-                            label: "ตำบล / แขวง",
-                            options:
-                                districtToSubDistricts[selectedUserDistrict]!,
-                            selectedValue: selectedUserSubDistrict ?? '',
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedUserSubDistrict = newValue!;
-                              });
-                            },
-                          ),
-                        const SizedBox(height: 16),
-                        buildUnderlineTextField(postcodeShopkeeperController,
-                            'รหัสไปรษณีย์', 'รหัสไปรษณีย์', false, false),
-                        const SizedBox(height: 68),
+                        CustomImageUploadButton(
+                            label: 'ใบทะเบียนพาณิชย์',
+                            onPressed: () {
+                              showPicker3(
+                                context,
+                              );
+                            }),
+                        const SizedBox(height: 166),
                         Center(
                           child: SizedBox(
-                            width: 280,
+                            width: 230,
                             child: ElevatedButton(
-                              onPressed: fourthPageValidate ? signUpFunc : null,
+                              onPressed: firstPageValidate ? nextPage : null,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: fourthPageValidate
+                                shadowColor: Colors.transparent,
+                                backgroundColor: firstPageValidate
                                     ? Colors.blue
-                                    : const Color.fromARGB(135, 199, 199, 199),
+                                    : Colors.grey,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
@@ -1182,14 +1092,14 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                                 ),
                               ),
                               child: Text(
-                                fourthPageValidate
-                                    ? 'ดำเนินการต่อ'
-                                    : 'กรุณากรอกข้อมูลให้ครบ',
+                                'ไปหน้าถัดไป',
                                 style: TextStyle(
-                                    color: fourthPageValidate
+                                    fontSize: 16,
+                                    fontFamily: GoogleFonts.mitr().fontFamily,
+                                    color: firstPageValidate
                                         ? Colors.white
-                                        : const Color.fromARGB(255, 60, 60, 60),
-                                    fontSize: 16),
+                                        : const Color.fromARGB(
+                                            255, 56, 56, 56)),
                               ),
                             ),
                           ),
@@ -1198,11 +1108,172 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                     ),
                   ),
                 ),
+                SingleChildScrollView(
+                  child: Container(
+                    color: Colors.white,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 40, right: 40),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 20),
+                            const Text(
+                              'ข้อมูลผู้ดูแล',
+                              style: TextStyle(
+                                fontSize: 24,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'เราจะแสดงข้อมูลต่อไปนี้ของคุณให้ลูกค้าบนแอปฯ',
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 150,
+                                  child: buildUnderlineTextField(
+                                      nameShopkeeperController,
+                                      'ชื่อ',
+                                      'ใส่ชื่อจริงของผู้ดูแลร้าน',
+                                      false,
+                                      false),
+                                ),
+                                SizedBox(width: 10),
+                                Container(
+                                  width: 150,
+                                  child: buildUnderlineTextField(
+                                      surnameShopkeeperController,
+                                      'นามสกุล ',
+                                      'ใส่นามสกุลของผู้ดูแล',
+                                      false,
+                                      false),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            buildUnderlineTextField(
+                                nationalityShopkeeperController,
+                                'เชื้อชาติ',
+                                'เชื้อชาติ',
+                                false,
+                                false),
+                            const SizedBox(height: 8),
+                            buildUnderlineTextField(
+                                placeShopkeeperController,
+                                'ที่อยู่อาศัย (โดยละเอียด)',
+                                'กรอกเลขที่บ้านพร้อมชื่อถนน หรืออสถานที่ใกล้เคียง',
+                                false,
+                                false),
+                            const SizedBox(height: 16),
+                            SelectOption(
+                              label: "จังหวัด",
+                              options: provinceToDistricts.keys.toList(),
+                              selectedValue: selectedUserProvince ?? '',
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  selectedUserProvince = newValue!;
+                                  selectedUserDistrict =
+                                      provinceToDistricts[selectedUserProvince]!
+                                          .first;
+                                  selectedUserSubDistrict =
+                                      districtToSubDistricts[
+                                              selectedUserDistrict]!
+                                          .first;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            if (selectedProvince != null)
+                              SelectOption(
+                                label: "อำเภอ / เขต",
+                                options:
+                                    provinceToDistricts[selectedUserProvince]!,
+                                selectedValue: selectedUserDistrict ?? '',
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedUserDistrict = newValue!;
+                                    selectedUserSubDistrict =
+                                        districtToSubDistricts[
+                                                selectedUserDistrict]!
+                                            .first;
+                                  });
+                                },
+                              ),
+                            const SizedBox(height: 16),
+                            if (selectedProvince != null)
+                              SelectOption(
+                                label: "ตำบล / แขวง",
+                                options: districtToSubDistricts[
+                                    selectedUserDistrict]!,
+                                selectedValue: selectedUserSubDistrict ?? '',
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedUserSubDistrict = newValue!;
+                                  });
+                                },
+                              ),
+                            const SizedBox(height: 16),
+                            buildUnderlineTextField(
+                                postcodeShopkeeperController,
+                                'รหัสไปรษณีย์',
+                                'รหัสไปรษณีย์',
+                                false,
+                                false),
+                            const SizedBox(height: 68),
+                            Center(
+                              child: SizedBox(
+                                width: 280,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      fourthPageValidate ? signUpFunc : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: fourthPageValidate
+                                        ? Colors.blue
+                                        : const Color.fromARGB(
+                                            135, 199, 199, 199),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    fourthPageValidate
+                                        ? 'ดำเนินการต่อ'
+                                        : 'กรุณากรอกข้อมูลให้ครบ',
+                                    style: TextStyle(
+                                        color: fourthPageValidate
+                                            ? Colors.white
+                                            : const Color.fromARGB(
+                                                255, 60, 60, 60),
+                                        fontSize: 16),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (regisLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3), // สีดำโปร่งบาง
+              child: const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.white), // ให้สีวงกลมเป็นขาว
+                ),
               ),
             ),
-          ],
-        ),
-      ),
-    );
+        ]));
   }
 }
