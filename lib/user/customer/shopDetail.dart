@@ -30,21 +30,6 @@ class Shopdetail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height: 200,
-                    child: GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(52.4862, -1.8904), // ตำแหน่งที่อยู่
-                        zoom: 14,
-                      ),
-                      markers: {
-                        Marker(
-                          markerId: MarkerId('storeLocation'),
-                          position: LatLng(52.4862, -1.8904),
-                        ),
-                      },
-                    ),
-                  ),
                   SizedBox(height: 16),
                   Text(
                     'Tops market - เซ็นทรัลเวสเกต',
@@ -198,59 +183,29 @@ class Reportshop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                icon: Icon(Icons.close_rounded, color: Colors.black),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              icon: Icon(Icons.close_rounded, color: Colors.black),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
-            Text(
-              "ชื่อหัวข้อ",
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
-              child: TextField(
-                decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintStyle: TextStyle(
-                      color: Colors.grey,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    )),
-              ),
-            ),
-            Text(
-              "เนื้อหา",
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
-            SizedBox(
-              height: 4,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: TextField(
-                minLines: 8,
-                maxLines: 13,
-                decoration: InputDecoration(
+          ),
+          Text(
+            "ชื่อหัวข้อ",
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
+            child: TextField(
+              decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
                   hintStyle: TextStyle(
@@ -258,31 +213,54 @@ class Reportshop extends StatelessWidget {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
+                  )),
             ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(horizontal: 44, vertical: 12),
-                shape: RoundedRectangleBorder(
+          ),
+          Text(
+            "เนื้อหา",
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          SizedBox(
+            height: 4,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: TextField(
+              minLines: 8,
+              maxLines: 13,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                hintStyle: TextStyle(
+                  color: Colors.grey,
+                ),
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text(
-                "ยืนยัน",
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white),
+            ),
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 44, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
-            SizedBox(height: 24),
-          ],
-        ),
+            child: Text(
+              "ยืนยัน",
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white),
+            ),
+          ),
+          SizedBox(height: 24),
+        ],
       ),
     );
   }
