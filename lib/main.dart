@@ -10,7 +10,7 @@ import 'package:mobile/user/customer/cartList.dart';
 import 'package:mobile/user/customer/historyPage.dart';
 import 'package:mobile/user/customer/homePage.dart';
 import 'package:mobile/user/customer/mailboxDetail.dart';
-import 'package:mobile/user/customer/payMent.dart';
+import 'package:mobile/user/customer/payment.dart';
 import 'package:mobile/user/customer/productDetail.dart';
 import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/reportShop.dart';

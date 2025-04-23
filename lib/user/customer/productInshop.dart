@@ -66,20 +66,13 @@ class _ProductInShopState extends State<ProductInShop> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
+          // Main content column
           Column(
             children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  width: double.infinity,
-                  height: 200,
-                  child: Image.asset(
-                    'assets/images/alt.png',
-                    fit: BoxFit.cover,
-                  ),
-                ),
+              // Cover image space
+              Container(
+                width: double.infinity,
+                height: 200,
               ),
               Expanded(
                 child: Container(
@@ -99,7 +92,8 @@ class _ProductInShopState extends State<ProductInShop> {
                                 height: 100,
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                    image: AssetImage('assets/images/alt.png'),
+                                    image: NetworkImage(
+                                        widget.shopData['imgUrl']['shopUrl']),
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -209,6 +203,21 @@ class _ProductInShopState extends State<ProductInShop> {
                 ),
               ),
             ],
+          ),
+          // Positioned elements that must be direct children of Stack
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              width: double.infinity,
+              height: 200,
+              child: Image.network(
+                widget.shopData['imgUrl']['shopCoverUrl'] ??
+                    'https://via.placeholder.com/150',
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
           Positioned(
             top: 40,
