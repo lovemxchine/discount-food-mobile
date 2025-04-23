@@ -21,7 +21,7 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   List<dynamic> listProducts = [];
   List<dynamic> filteredItems = [];
-  Map<String, dynamic> userProfileData = {};
+  Map<String, dynamic>? userProfileData;
   TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
   var pathAPI = '';
@@ -148,7 +148,6 @@ class _HomepageState extends State<Homepage> {
       }
     } catch (e) {
       print('Error: $e');
-
     }
   }
 
@@ -358,13 +357,14 @@ class _HomepageState extends State<Homepage> {
                                                 });
                                               },
                                               child: Icon(
-                                                  userProfileData['favShop']
-                                                              ?.contains(item[
-                                                                  'shopId']) ??
-                                                          false
-                                                      ? Icons.favorite
-                                                      : Icons.favorite_border,
-                                                  color: Colors.red),
+                                                userProfileData?['favShop']
+                                                            ?.contains(item[
+                                                                'shopId']) ??
+                                                        false
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: Colors.red,
+                                              ),
                                             ),
                                           ],
                                         ),
