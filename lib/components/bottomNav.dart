@@ -19,7 +19,7 @@ class _BottomNavCustomerState extends State<BottomNavCustomer> {
     FavoritePage(),
     Homepage(),
     MailBoxPage(),
-    SettingsPage(),
+    SettingsUserPage(),
   ];
 
   @override
@@ -56,9 +56,9 @@ class _BottomNavCustomerState extends State<BottomNavCustomer> {
                     elevation: 0,
                     currentIndex: _currentIndex,
                     onTap: (index) {
-                      if (index == 4) {
-                        Navigator.pushNamed(context, '/signIn');
-                      }
+                      // if (index == 4) {
+                      //   Navigator.pushNamed(context, '/signIn');
+                      // }
                       setState(() {
                         _currentIndex = index;
                       });

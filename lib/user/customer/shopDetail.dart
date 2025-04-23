@@ -1,19 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/reportShop.dart';
 import 'package:latlong2/latlong.dart'; // for LatLng
 
 class Shopdetail extends StatefulWidget {
-  const Shopdetail({super.key, required Map<String, dynamic> shopData});
+  final Map<String, dynamic> shopData;
+  const Shopdetail({super.key, required this.shopData});
 
   @override
   State<Shopdetail> createState() => _ShopdetailState();
 }
 
 class _ShopdetailState extends State<Shopdetail> {
+  List<dynamic> listProducts = [];
+  List<dynamic> filteredItems = [];
+  Map<String, dynamic>? shopData;
+  TextEditingController searchController = TextEditingController();
+  bool _isLoading = false;
+  var pathAPI = '';
+  late String shopUid;
+
+  @override
+  void initState() {
+    super.initState();
+    shopUid = widget.shopData['uid'];
+    initFetch();
+    searchController.addListener(filterItems);
+  }
+
+  @override
+  void dispose() {
+    searchController.removeListener(filterItems);
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void filterItems() {
+    setState(() {
+      filteredItems = listProducts
+          .where((item) => item['name']
+              .toLowerCase()
+              .contains(searchController.text.toLowerCase()))
+          .toList();
+    });
+  }
+
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await _fetchShopDetails();
+  }
+
+  Future<void> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+    });
+    print("API Path: $pathAPI");
+  }
+
+  Future<void> _fetchShopDetails() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final url =
+        Uri.parse("http://$pathAPI/customer/getShopDetails?uid=$shopUid");
+    print("Calling URL: $url");
+    print("UID used: $shopUid");
+
+    try {
+      var response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final data = responseData['data'];
+        print(response.body);
+
+        if (data == null || data is! Map<String, dynamic>) {
+          print('Invalid data from server');
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
+
+        setState(() {
+          shopData = data;
+          _isLoading = false;
+        });
+        print(shopData);
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        print('Server returned an error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching shop details: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     late double latitude;
@@ -98,209 +194,216 @@ class _ShopdetailState extends State<Shopdetail> {
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: _isLoading || shopData == null
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Stack(
                 children: [
-                  Container(
-                      height: 200,
-                      child: FlutterMap(
-                        options: MapOptions(
-                          initialCenter:
-                              LatLng(latitude, longitude), // ตำแหน่งที่อยู่
-                          maxZoom: 15.0,
-                        ),
-                        children: [
-                          TileLayer(
-                            urlTemplate:
-                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                            subdomains: ['a', 'b', 'c'],
-                          ),
-                          MarkerLayer(
-                            markers: [
-                              Marker(
-                                point: LatLng(latitude, longitude),
-                                width: 40,
-                                height: 40,
-                                child: Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.location_on,
-                                    size: 20,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                  SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                            height: 200,
+                            child: FlutterMap(
+                              options: MapOptions(
+                                initialCenter: LatLng(
+                                    latitude, longitude), // ตำแหน่งที่อยู่
+                                maxZoom: 15.0,
                               ),
-                            ],
-                          )
-                        ],
-                      )),
-                  SizedBox(height: 16),
-                  Text(
-                    'Tops market - เซ็นทรัลเวสเกต',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'ระยะเวลาเปิด - ปิด (10:00 - 22:00)',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.local_shipping, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text(
-                        'มีบริการจัดส่ง',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                              children: [
+                                TileLayer(
+                                  urlTemplate:
+                                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                  subdomains: ['a', 'b', 'c'],
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      point: LatLng(latitude, longitude),
+                                      width: 40,
+                                      height: 40,
+                                      child: Container(
+                                        width: 10,
+                                        height: 10,
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.location_on,
+                                          size: 20,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            )),
+                        SizedBox(height: 16),
+                        Text(
+                          shopData?['name'],
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Divider(),
-                  SizedBox(height: 16),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.phone, color: Colors.red),
-                      SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ติดต่อร้านค้า',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        SizedBox(height: 4),
+                        Text(
+                          'ระยะเวลาเปิด - ปิด ( ${shopData?['openAt']} -  ${shopData?['closeAt']} )',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            'เบอร์: 064-254-3666',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          Text(
-                            'อีเมล์: test@example.com',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.location_on, color: Colors.red),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                        SizedBox(height: 4),
+                        Row(
                           children: [
+                            Icon(Icons.local_shipping, color: Colors.blue),
+                            SizedBox(width: 8),
                             Text(
-                              'ตำแหน่งที่ตั้ง',
+                              'มีบริการจัดส่ง',
                               style: TextStyle(
+                                color: Colors.blue,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              '199, 199/1 199/2 ถ. กาญจนาภิเษก ตำบลเสาธงหิน อำเภอบางใหญ่ นนทบุรี 11140',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        Divider(),
+                        SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.phone, color: Colors.red),
+                            SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ติดต่อร้านค้า',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'เบอร์: ${shopData?['tel']}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                Text(
+                                  'อีเมล์: ${shopData?['email']}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.location_on, color: Colors.red),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'ตำแหน่งที่ตั้ง',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '${shopData?['shopLocation_th']?['place'] ?? ''}, '
+                                    '${shopData?['shopLocation_th']?['subdistrict'] ?? ''}, '
+                                    '${shopData?['shopLocation_th']?['district'] ?? ''}, '
+                                    '${shopData?['shopLocation_th']?['province'] ?? ''}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 100),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 100),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                insetPadding: const EdgeInsets.all(16),
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: AnimatedPadding(
+                                  padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context)
+                                            .viewInsets
+                                            .bottom +
+                                        16,
+                                    top: 16,
+                                    left: 16,
+                                    right: 16,
+                                  ),
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.decelerate,
+                                  child: Reportshop(),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 34, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 5,
+                          shadowColor: Colors.black,
+                        ),
+                        child: const Text(
+                          'รายงาน',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return Dialog(
-                          insetPadding: const EdgeInsets.all(16),
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: AnimatedPadding(
-                            padding: EdgeInsets.only(
-                              bottom:
-                                  MediaQuery.of(context).viewInsets.bottom + 16,
-                              top: 16,
-                              left: 16,
-                              right: 16,
-                            ),
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.decelerate,
-                            child: Reportshop(),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 34, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    elevation: 5,
-                    shadowColor: Colors.black,
-                  ),
-                  child: const Text(
-                    'รายงาน',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

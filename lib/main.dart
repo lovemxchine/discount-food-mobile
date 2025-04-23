@@ -14,6 +14,7 @@ import 'package:mobile/user/customer/payment.dart';
 import 'package:mobile/user/customer/productDetail.dart';
 import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/reportShop.dart';
+import 'package:mobile/user/customer/settingsPage.dart';
 import 'package:mobile/user/customer/shopDetail.dart';
 import 'package:mobile/user/customer/submitPayment.dart';
 import 'package:mobile/user/page/guest.dart';
@@ -74,6 +75,7 @@ class _MyAppState extends State<MyApp> {
           '/registerRole/shopkeeper': (context) => RegisterShopkeeper(),
           '/registerRole/shopkeeper/selectMap': (context) => SelectMapLocate(),
           '/home': (context) => Homepage(),
+          '/setting/user': (context) => SettingsUserPage(),
           '/guest': (context) => GuestScreen(),
           // '/guest/productInShop': (context) => GuestProductInShop(),
           '/shop': (context) => BottomNavShop(),
