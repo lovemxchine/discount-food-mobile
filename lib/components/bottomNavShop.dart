@@ -5,6 +5,7 @@ import 'package:mobile/user/customer/allshopNear.dart';
 import 'package:mobile/user/shop/profile.dart';
 
 import 'package:mobile/user/shop/shopDiscountProductScreen.dart';
+import 'package:mobile/user/shop/shopHistoryListScreen.dart';
 import 'package:mobile/user/shop/shopMainScreen.dart';
 import 'package:mobile/user/customer/mailboxDetail.dart';
 import 'package:mobile/user/shop/shopOrderList.dart';
@@ -21,7 +22,7 @@ class _BottomNavShopState extends State<BottomNavShop> {
     DiscountProductScreen(),
     OrderListScreen(),
     ShopMainScreen(),
-    Placeholder(),
+    HistoryListScreen(),
     ProfileScreen(),
   ];
 
@@ -68,7 +69,7 @@ class _BottomNavShopState extends State<BottomNavShop> {
                       BottomNavigationBarItem(
                           icon: Icon(Icons.store), label: 'สินค้าลดราคา'),
                       BottomNavigationBarItem(
-                          icon: Icon(Icons.favorite), label: 'รายการสั่ง'),
+                          icon: Icon(Icons.list_rounded), label: 'รายการสั่ง'),
                       BottomNavigationBarItem(
                           icon: Icon(Icons.home), label: 'หน้าหลัก'),
                       BottomNavigationBarItem(

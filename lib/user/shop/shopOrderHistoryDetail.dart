@@ -10,16 +10,18 @@ import 'package:mobile/utils/func/fetchData.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-class OrderDetailScreen extends StatefulWidget {
+class OrderHistoryDetailScreen extends StatefulWidget {
   final orderData;
 
-  OrderDetailScreen({Key? key, required this.orderData}) : super(key: key);
+  OrderHistoryDetailScreen({Key? key, required this.orderData})
+      : super(key: key);
 
   @override
-  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+  State<OrderHistoryDetailScreen> createState() =>
+      _OrderHistoryDetailScreenState();
 }
 
-class _OrderDetailScreenState extends State<OrderDetailScreen> {
+class _OrderHistoryDetailScreenState extends State<OrderHistoryDetailScreen> {
   final bool isLoading = true;
   late int currentQuantity;
   var pathAPI = "";
@@ -41,6 +43,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   String formatOrderDate(String dateStr) {
+    if (dateStr.isEmpty) return 'Date not available';
     DateTime dateTime = DateTime.parse(dateStr);
     return DateFormat('วันที่ dd/MM/yyyy เวลา HH:mm น.').format(dateTime);
   }
@@ -70,40 +73,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }).catchError((error) {
       print('Error: $error');
     });
-  }
-
-  Future<void> updateOrderProfile(String status) async {
-    try {
-      String? uid = await getUID();
-      String orderId = widget.orderData['orderId'];
-
-      final url = Uri.parse("$pathAPI/shop/updateOrderStatus");
-      var response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        // body: json.encode({'shopUid': shopUID, 'uid': uid}),
-        body: json.encode({
-          "customerUid": userProfile['uid'] ?? '',
-          "shopUid": uid ?? '',
-          "orderId": orderId,
-          "status": status
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('อัพเดตสถานะคำสั่งซื้อสำเร็จ')),
-        );
-        Navigator.pushNamed(context, '/shop');
-      } else {
-        throw Exception('Failed to update order status');
-      }
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating order status: $e')),
-      );
-    }
   }
 
   @override
@@ -244,88 +213,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               borderRadius: BorderRadius.circular(8),
                             )),
                         onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Container(
-                                  width: 500,
-                                  height: 600,
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(height: 20),
-                                      const Text(
-                                        'หลักฐานการชำระเงิน',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Image.network(
-                                        widget.orderData['receiptUrl'] ??
-                                            'https://via.placeholder.com/150',
-                                        fit: BoxFit.cover,
-                                        width: 300,
-                                        height: 300,
-                                      ),
-                                      const SizedBox(height: 40),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        // crossAxisAlignment:/
-                                        // CrossAxisAlignment.center,
-                                        children: [
-                                          Spacer(),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.green,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              // Navigator.pop(context);
-                                              updateOrderProfile('Success');
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text(
-                                              'ยืนยัน',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 20),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              updateOrderProfile('Rejected');
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text(
-                                              'ปฎิเสธ',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                          Spacer(),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
+                          // updateProd();
                         },
                         child: Container(
                             child: const Text(

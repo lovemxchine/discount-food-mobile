@@ -7,18 +7,19 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/user/shop/shopOrderDetailScreen.dart';
+import 'package:mobile/user/shop/shopOrderHistoryDetail.dart';
 import 'package:mobile/user/shop/shopProductDetailScreen.dart';
 import 'package:mobile/user/shop/shopProductUpdateScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class OrderListScreen extends StatefulWidget {
-  const OrderListScreen({super.key});
+class HistoryListScreen extends StatefulWidget {
+  const HistoryListScreen({super.key});
 
-  State<OrderListScreen> createState() => OrderListScreenState();
+  State<HistoryListScreen> createState() => HistoryListScreenState();
 }
 
 // TODO: fixed reload realtime data
-class OrderListScreenState extends State<OrderListScreen> {
+class HistoryListScreenState extends State<HistoryListScreen> {
   List<dynamic> listOrder = [];
   bool isLoading = true;
   MediaType mediaType = MediaType('application', 'json');
@@ -45,24 +46,9 @@ class OrderListScreenState extends State<OrderListScreen> {
     return formattedDate;
   }
 
-  String convertDateFormat(String input) {
-    // Parse the original string into a DateTime object
-    final originalFormat = DateFormat("MMMM d, yyyy h:mm:ssa Z");
-    final parsedDate = originalFormat.parse(input);
-
-    // Format into desired output: "7:00:00 22 April 2025"
-    final newFormat = DateFormat("HH:mm:ss d MMMM yyyy");
-    return newFormat.format(parsedDate);
-  }
-
   String formatExpiredDate(String dateStr) {
     DateTime dateTime = DateTime.parse(dateStr);
     return DateFormat('dd-MM-yyyy').format(dateTime);
-  }
-
-  String formatOrderDate(String dateStr) {
-    DateTime dateTime = DateTime.parse(dateStr);
-    return DateFormat('dd/MM/yyyy เวลา HH:mm น.').format(dateTime);
   }
 
   Future<String?> getUID() async {
@@ -84,15 +70,22 @@ class OrderListScreenState extends State<OrderListScreen> {
     print(pathAPI);
   }
 
+  String formatOrderDate(String dateStr) {
+    DateTime dateTime = DateTime.parse(dateStr);
+    return DateFormat('dd/MM/yyyy เวลา HH:mm น.').format(dateTime);
+  }
+
   Future<void> _fetchData() async {
     String? uid = await getUID();
-    final url = Uri.parse("$pathAPI/shop/${uid}/getAllOrder");
+    // print("$pathAPI/shop/${uid}/fetchOrder");
+    final url = Uri.parse("$pathAPI/shop/${uid}/fetchOrder");
     var response = await http.get(
       url,
     );
     final responseData = jsonDecode(response.body);
+
     setState(() {
-      listOrder = responseData['data'];
+      listOrder = responseData['data'] ?? [];
     });
     // while (responseData['data'].length < 3) {
     //   setState(() {
@@ -105,10 +98,6 @@ class OrderListScreenState extends State<OrderListScreen> {
     print(listOrder.length);
     print(listOrder);
     print("test log");
-    print(listOrder[1]['status'] == "not confirm yet");
-    if (listOrder[1]['status'] == "not confirm yet") {
-      print("not confirm yet");
-    }
   }
 
   @override
@@ -197,11 +186,11 @@ class OrderListScreenState extends State<OrderListScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16)
                           .copyWith(top: 16),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'ออเดอร์สั่งสินค้า',
+                          const Text(
+                            'ประวัติการรายการสั่งซื้อ',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -223,19 +212,19 @@ class OrderListScreenState extends State<OrderListScreen> {
                             : Column(
                                 children: [
                                   for (int i = 0; i < listOrder.length; i++)
-                                    if (listOrder[i] != null &&
-                                        listOrder[i]['status'] ==
-                                            "Pending Order")
+                                    if (listOrder[i] != null)
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8, horizontal: 20),
                                         child: InkWell(
                                           onTap: () {
+                                            print("logging ${listOrder[i]}");
+
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    OrderDetailScreen(
+                                                    OrderHistoryDetailScreen(
                                                   orderData: listOrder[i],
                                                 ),
                                               ),
@@ -292,12 +281,23 @@ class OrderListScreenState extends State<OrderListScreen> {
                                                       Text(
                                                           listOrder[i]
                                                               ['status'],
-                                                          style:
-                                                              const TextStyle(
-                                                            fontSize: 12,
-                                                            color:
-                                                                Colors.orange,
-                                                          )),
+                                                          style: TextStyle(
+                                                              fontSize: 12,
+                                                              color: listOrder[
+                                                                              i]
+                                                                          [
+                                                                          'status'] ==
+                                                                      "Pending Order"
+                                                                  ? Colors
+                                                                      .orange
+                                                                  : listOrder[i]
+                                                                              [
+                                                                              'status'] ==
+                                                                          "Rejected"
+                                                                      ? Colors
+                                                                          .red
+                                                                      : Colors
+                                                                          .green)),
                                                       Spacer(),
                                                       Text(
                                                         "รายละเอียดรายการ",
