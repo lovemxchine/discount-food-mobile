@@ -141,10 +141,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   }
 
   Future<void> _fetchData() async {
-    // Uri url = "http://52.65.210.113:3000/" as Uri;
     print("before fetch");
     String? uid = await getUID();
-    final url = Uri.parse("http://$pathAPI/shop/profileDetail/${uid}");
+    final url = Uri.parse("$pathAPI/shop/profileDetail/${uid}");
     try {
       var response = await http.get(url);
       if (response.statusCode == 200) {
@@ -174,10 +173,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   }
 
   Future<void> _saveImage(File image) async {
-    // Uri url = "http://52.65.210.113:3000/" as Uri;
     print("before fetch");
     String? uid = await getUID();
-    final url = Uri.parse("http://$pathAPI/shop/uploadImage");
+    final url = Uri.parse("$pathAPI/shop/uploadImage");
     try {
       var response = await http.post(url,
           body: jsonEncode({

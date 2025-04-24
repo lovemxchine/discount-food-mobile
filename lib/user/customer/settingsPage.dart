@@ -76,12 +76,12 @@ class _SettingsUserPageState extends State<SettingsUserPage> {
 
   Future<void> _fetchProfile() async {
     String? uid = await getUID();
-    final url = Uri.parse("http://$pathAPI/customer/profileDetail?uid=$uid");
+    final url = Uri.parse("$pathAPI/customer/profileDetail?uid=$uid");
 
     try {
       var response = await http.get(url);
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+      print("$pathAPI/customer/profileDetail?uid=$uid");
 
       if (response.statusCode == 200) {
         setState(() {

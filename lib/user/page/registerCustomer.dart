@@ -295,7 +295,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
         print(user.uid);
         print('hello world');
 
-        final url = Uri.parse("http://$pathAPI/authentication/customer");
+        final url = Uri.parse("$pathAPI/authentication/customer");
         final response = await http.post(
           url,
           headers: {

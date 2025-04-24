@@ -52,10 +52,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> deleteProd() async {
-    // Uri url = "http://52.65.210.113:3000/" as Uri;
     String? uid = await getUID();
     String prodID = widget.productData['productId'];
-    final url = Uri.parse("http://$pathAPI/shop/$uid/product/$prodID");
+    final url = Uri.parse("$pathAPI/shop/$uid/product/$prodID");
     var response = await http.delete(url,
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
@@ -73,7 +72,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       print(uid);
       print(prodID);
 
-      final url = Uri.parse("http://$pathAPI/shop/$uid/product/$prodID");
+      final url = Uri.parse("$pathAPI/shop/$uid/product/$prodID");
       var response = await http.patch(url,
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',

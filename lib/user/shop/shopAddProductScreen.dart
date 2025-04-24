@@ -147,7 +147,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
 
     try {
-      final url = Uri.parse("http://$pathAPI/shop/$uid/product/addProduct");
+      final url = Uri.parse("$pathAPI/shop/$uid/product/addProduct");
       var request = http.MultipartRequest('POST', url);
       request.headers['Content-Type'] = 'application/json; charset=UTF-8';
       request.fields['product_name'] = nameController.text;

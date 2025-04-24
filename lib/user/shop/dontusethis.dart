@@ -34,9 +34,8 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
   }
 
   Future<void> _fetchData() async {
-    // Uri url = "http://52.65.210.113:3000/" as Uri;
     String? uid = await getUID();
-    final url = Uri.parse("http://52.65.210.113:3000/shop/mainScreen/${uid}");
+    final url = Uri.parse(" shop/mainScreen/${uid}");
     var response = await http.get(
       url,
     );

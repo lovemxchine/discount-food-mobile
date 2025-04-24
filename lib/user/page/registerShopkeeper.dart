@@ -455,7 +455,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
         print(user.uid);
 
         // Create the request
-        final url = Uri.parse("http://$pathAPI/authentication/registerShop");
+        final url = Uri.parse("$pathAPI/authentication/registerShop");
         var request = http.MultipartRequest('POST', url);
 
         // Add the JSON fields to the request

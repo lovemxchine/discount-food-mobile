@@ -48,11 +48,10 @@ class _ProductInShopState extends State<ProductInShop> {
 
   Future<void> fetchProduct() async {
     final url = Uri.parse(
-        "http://$pathAPI/shop/${widget.shopData['uid']}/getAvailableProduct");
+        "$pathAPI/shop/${widget.shopData['uid']}/getAvailableProduct");
     var response = await http.get(url);
     final responseData = jsonDecode(response.body);
-    print(
-        "test http://$pathAPI/shop/${widget.shopData['uid']}/getAvailableProduct");
+    print("test $pathAPI/shop/${widget.shopData['uid']}/getAvailableProduct");
     setState(() {
       listProducts = responseData['data'];
     });

@@ -71,8 +71,7 @@ class _FavoritePageState extends State<FavoritePage> {
       return;
     }
 
-    final url =
-        Uri.parse("http://$pathAPI/customer/fetchFavoriteShop?uid=$uid");
+    final url = Uri.parse("$pathAPI/customer/fetchFavoriteShop?uid=$uid");
 
     try {
       var response = await http.get(url);
@@ -106,12 +105,12 @@ class _FavoritePageState extends State<FavoritePage> {
 
   Future<void> _fetchProfile() async {
     String? uid = await getUID();
-    final url = Uri.parse("http://$pathAPI/customer/profileDetail?uid=$uid");
+    final url = Uri.parse("$pathAPI/customer/profileDetail?uid=$uid");
 
     try {
       var response = await http.get(url);
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+      print("$pathAPI/customer/profileDetail?uid=$uid");
 
       if (response.statusCode == 200) {
         setState(() {
@@ -132,7 +131,7 @@ class _FavoritePageState extends State<FavoritePage> {
 
   Future<void> updateFav(String shopUID) async {
     String? uid = await getUID();
-    final url = Uri.parse("http://$pathAPI/customer/favoriteShop");
+    final url = Uri.parse("$pathAPI/customer/favoriteShop");
 
     try {
       var response = await http.post(
@@ -141,7 +140,7 @@ class _FavoritePageState extends State<FavoritePage> {
         body: json.encode({'shopUid': shopUID, 'uid': uid}),
       );
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+      print("$pathAPI/customer/profileDetail?uid=$uid");
 
       if (response.statusCode == 200) {
         setState(() {

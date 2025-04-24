@@ -70,8 +70,7 @@ class _ShopdetailState extends State<Shopdetail> {
       _isLoading = true;
     });
 
-    final url =
-        Uri.parse("http://$pathAPI/customer/getShopDetails?uid=$shopUid");
+    final url = Uri.parse("$pathAPI/customer/getShopDetails?uid=$shopUid");
     print("Calling URL: $url");
     print("UID used: $shopUid");
 

@@ -256,7 +256,7 @@ class _SignInState extends State<SignIn> {
       print("user");
       if (user != null) {
         print("This Email is registered");
-        final url = Uri.parse("http://$pathAPI/authentication/signIn");
+        final url = Uri.parse("$pathAPI/authentication/signIn");
         final response = await http.post(
           url,
           headers: {

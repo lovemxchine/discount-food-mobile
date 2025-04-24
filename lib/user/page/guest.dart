@@ -62,7 +62,7 @@ class _GuestScreenState extends State<GuestScreen> {
       _isLoading = true;
     });
 
-    final url = Uri.parse("http://$pathAPI/customer/availableShop");
+    final url = Uri.parse("$pathAPI/customer/availableShop");
     try {
       var response = await http.get(url);
       final Map<String, dynamic> responseData = json.decode(response.body);

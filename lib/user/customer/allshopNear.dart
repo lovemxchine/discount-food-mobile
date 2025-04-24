@@ -18,7 +18,6 @@ class _AllShopNearbyState extends State<AllShopNearby> {
   var pathAPI = '';
   List listProducts = [];
 
-
   @override
   void initState() {
     super.initState();
@@ -82,7 +81,7 @@ class _AllShopNearbyState extends State<AllShopNearby> {
     print('Current location: $location');
 
     final result = await getData(
-        'http://$pathAPI/shop/nearbyShop?lat=${position.latitude}&lng=${position.longitude}');
+        '$pathAPI/shop/nearbyShop?lat=${position.latitude}&lng=${position.longitude}');
 
     if (result['status'] == "success") {
       setState(() {

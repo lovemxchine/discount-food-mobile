@@ -29,7 +29,7 @@
 //   Future<void> uploadImage() async {
 //     if (_image == null) return;
 
-//     var url = Uri.parse('http://52.65.210.113:3000/upload/');
+//     var url = Uri.parse(' upload/');
 //     var request = http.MultipartRequest('POST', url);
 //     request.files.add(await http.MultipartFile.fromPath('image', _image!.path));
 

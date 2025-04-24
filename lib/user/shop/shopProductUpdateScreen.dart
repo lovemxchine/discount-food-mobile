@@ -56,7 +56,7 @@ class _ProductUpdateScreenState extends State<ProductUpdateScreen> {
       print(uid);
       print(prodID);
 
-      final url = Uri.parse("http://$pathAPI/shop/$uid/product/$prodID");
+      final url = Uri.parse("$pathAPI/shop/$uid/product/$prodID");
       var response = await http.patch(url,
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',

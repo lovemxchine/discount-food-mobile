@@ -70,9 +70,8 @@ class OrderListScreenState extends State<OrderListScreen> {
   }
 
   Future<void> _fetchData() async {
-    // Uri url = "http://52.65.210.113:3000/" as Uri;
     String? uid = await getUID();
-    final url = Uri.parse("http://$pathAPI/shop/${uid}/getAllOrder");
+    final url = Uri.parse("$pathAPI/shop/${uid}/getAllOrder");
     var response = await http.get(
       url,
     );

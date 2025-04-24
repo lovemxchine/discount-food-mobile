@@ -70,7 +70,7 @@ class _HomepageState extends State<Homepage> {
     setState(() {
       _isLoading = true;
     });
-    final url = Uri.parse("http://$pathAPI/customer/availableShop");
+    final url = Uri.parse("$pathAPI/customer/availableShop");
 
     try {
       var response = await http.get(url);
@@ -101,12 +101,12 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _fetchProfile() async {
     String? uid = await getUID();
-    final url = Uri.parse("http://$pathAPI/customer/profileDetail?uid=$uid");
+    final url = Uri.parse("$pathAPI/customer/profileDetail?uid=$uid");
 
     try {
       var response = await http.get(url);
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+      print("$pathAPI/customer/profileDetail?uid=$uid");
 
       if (response.statusCode == 200) {
         setState(() {
@@ -127,7 +127,7 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> updateFav(String shopUID) async {
     String? uid = await getUID();
-    final url = Uri.parse("http://$pathAPI/customer/favoriteShop");
+    final url = Uri.parse("$pathAPI/customer/favoriteShop");
 
     try {
       var response = await http.post(
@@ -136,7 +136,7 @@ class _HomepageState extends State<Homepage> {
         body: json.encode({'shopUid': shopUID, 'uid': uid}),
       );
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print("http://$pathAPI/customer/profileDetail?uid=$uid");
+      print("$pathAPI/customer/profileDetail?uid=$uid");
 
       if (response.statusCode == 200) {
         setState(() {
