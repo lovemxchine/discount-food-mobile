@@ -358,8 +358,8 @@ class _HomepageState extends State<Homepage> {
                                               },
                                               child: Icon(
                                                 userProfileData?['favShop']
-                                                            ?.contains(item[
-                                                                'shopId']) ??
+                                                            ?.contains(
+                                                                item['uid']) ??
                                                         false
                                                     ? Icons.favorite
                                                     : Icons.favorite_border,

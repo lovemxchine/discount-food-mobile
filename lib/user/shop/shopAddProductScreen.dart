@@ -190,7 +190,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
-    var url = Uri.parse('http://' + pathAPI + '/gemini/OCR');
+    var url = Uri.parse(pathAPI + '/gemini/OCR');
     var request = http.MultipartRequest('POST', url);
     request.files
         .add(await http.MultipartFile.fromPath('image', _imageGemini!.path));

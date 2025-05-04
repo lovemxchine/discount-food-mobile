@@ -42,6 +42,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     await deleteProd();
   }
 
+  Future<void> updateProduct(bool showStatus) async {
+    await fetchUrl();
+    await updateProd(showStatus);
+  }
+
   Future<void> fetchUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -373,7 +378,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 )),
                             onPressed: () {
-                              updateProd(showStatus);
+                              updateProduct(showStatus);
                             },
                             child: Container(
                                 child: Text(

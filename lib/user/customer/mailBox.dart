@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mobile/components/bottomNav.dart';
 import 'package:mobile/user/customer/allshopNear.dart';
@@ -6,6 +8,8 @@ import 'package:mobile/user/customer/historyPage.dart';
 import 'package:mobile/user/customer/homePage.dart';
 import 'package:mobile/user/customer/mailboxDetail.dart';
 import 'package:mobile/user/customer/settingsPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class MailBoxPage extends StatefulWidget {
   @override
@@ -13,6 +17,59 @@ class MailBoxPage extends StatefulWidget {
 }
 
 class _MailBoxPageState extends State<MailBoxPage> {
+  Map<String, dynamic>? userProfileData;
+  bool _isLoading = true;
+  // var pathAPI = '';
+
+  Future<String> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+  }
+
+  Future<String?> getUID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_uid');
+  }
+
+  Future<void> _fetchProfile() async {
+    String? uid = await getUID();
+    var pathAPI = await fetchUrl();
+
+    if (uid == null) {
+      // Handle the case when UID is not available
+      return;
+    }
+    print("pathAPI $pathAPI");
+    final url = Uri.parse("$pathAPI/customer/profileDetail?uid=$uid");
+
+    try {
+      var response = await http.get(url);
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      print("$pathAPI/customer/profileDetail?uid=$uid");
+
+      if (response.statusCode == 200) {
+        setState(() {
+          userProfileData = responseData['data'];
+          _isLoading = false;
+        });
+        print("userProfileData:  $userProfileData");
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        // Handle error
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile();
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -49,11 +106,17 @@ class _MailBoxPageState extends State<MailBoxPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'ชาญณรงค์ ชาญเฌอ',
-                              style:
-                                  TextStyle(fontSize: 18, color: Colors.white),
-                            ),
+                            userProfileData != null
+                                ? Text(
+                                    '${userProfileData!['fname']} ${userProfileData!['lname']}',
+                                    style: TextStyle(
+                                        fontSize: 18, color: Colors.white),
+                                  )
+                                : Text(
+                                    'กำลังโหลด...',
+                                    style: TextStyle(
+                                        fontSize: 18, color: Colors.white),
+                                  ),
                             const SizedBox(height: 5),
                             Container(
                               padding: const EdgeInsets.symmetric(

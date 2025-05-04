@@ -66,15 +66,15 @@ class _BottomNavCustomerState extends State<BottomNavCustomer> {
                     type: BottomNavigationBarType.fixed,
                     items: const [
                       BottomNavigationBarItem(
-                          icon: Icon(Icons.store), label: 'Nearby Shops'),
+                          icon: Icon(Icons.store), label: 'ร้านค้าใกล้เคียง'),
                       BottomNavigationBarItem(
-                          icon: Icon(Icons.favorite), label: 'Favorite'),
+                          icon: Icon(Icons.favorite), label: 'ร้านค้าโปรด'),
                       BottomNavigationBarItem(
-                          icon: Icon(Icons.home), label: 'Home'),
+                          icon: Icon(Icons.home), label: 'หน้าหลัก'),
                       BottomNavigationBarItem(
-                          icon: Icon(Icons.mail), label: 'Mailbox'),
+                          icon: Icon(Icons.mail), label: 'ข้อความ'),
                       BottomNavigationBarItem(
-                          icon: Icon(Icons.settings), label: 'Settings'),
+                          icon: Icon(Icons.settings), label: 'การตั้งค่า'),
                     ],
                   ),
                 ),
