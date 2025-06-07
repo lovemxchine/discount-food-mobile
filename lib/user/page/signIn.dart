@@ -26,8 +26,50 @@ class _SignInState extends State<SignIn> {
   var pathAPI = '';
   bool loginLoading = false;
 
+  Map<String, dynamic>? userProfileData;
+
+  Future<void> fetchUserProfile(String uid) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      loginLoading = true;
+    });
+    try {
+      final url = Uri.parse("$pathAPI/customer/profileDetail?uid=$uid");
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+      });
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        setState(() {
+          userProfileData = responseData['data'];
+          loginLoading = false;
+        });
+        // Access username and lastname
+        String? username = userProfileData?['fname'];
+        String? lastname = userProfileData?['lname'];
+        prefs.setString('username', username ?? '');
+        prefs.setString('lastname', lastname ?? '');
+        print('Username: $username, Lastname: $lastname');
+        // You can also navigate to another page or perform other actions here
+      } else {
+        setState(() {
+          loginLoading = false;
+        });
+        print('Failed to fetch profile: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        loginLoading = false;
+      });
+      print('Error fetching profile: $e');
+    }
+  }
+
   Future<void> storeUID(String uid, String role) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    await fetchUserProfile(uid);
     await prefs.setString('user_uid', uid);
     await prefs.setString('user_role', role);
   }

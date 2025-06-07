@@ -22,6 +22,8 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
   bool isLoading = true;
   MediaType mediaType = MediaType('application', 'json');
   var pathAPI = '';
+  var fname = '';
+  var lname = '';
   @override
   void initState() {
     super.initState();
@@ -59,6 +61,8 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
 
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+      fname = prefs.getString('username') ?? '';
+      lname = prefs.getString('lastname') ?? '';
     });
     print(pathAPI);
   }
@@ -123,8 +127,8 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Guest',
+                            Text(
+                              '$fname $lname',
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),
@@ -290,8 +294,13 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
                                                       Row(
                                                         children: [
                                                           Text(
-                                                            listProducts[i]
-                                                                ['productName'],
+                                                            listProducts[i]['productName']
+                                                                        .length >
+                                                                    18
+                                                                ? '${listProducts[i]['productName'].substring(0, 18)}...'
+                                                                : listProducts[
+                                                                        i][
+                                                                    'productName'],
                                                             style:
                                                                 const TextStyle(
                                                                     fontSize:
@@ -351,7 +360,7 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
                                                           ),
                                                           Spacer(),
                                                           Text(
-                                                            'ราคาขาย ${listProducts[i]['salePrice']} บาท',
+                                                            '/ ราคาขาย ${listProducts[i]['salePrice']} บาท',
                                                             style:
                                                                 const TextStyle(
                                                                     fontSize:

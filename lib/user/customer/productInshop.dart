@@ -143,30 +143,56 @@ class _ProductInShopState extends State<ProductInShop> {
                           ],
                         ),
                       ),
-                      Expanded(
-                        child: GridView.builder(
-                          padding: EdgeInsets.all(16),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 3 / 4,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
+                      if (listProducts.isEmpty)
+                        Expanded(
+                          child: GridView.builder(
+                            padding: EdgeInsets.all(16),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 1,
+                                    childAspectRatio: 1,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 12),
+                            itemCount: 1,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'ไม่มีสินค้าที่ลดราคาในขณะนี้',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          itemCount: listProducts.length,
-                          itemBuilder: (context, index) {
-                            final item = listProducts[index];
-                            return ProductCard(
-                              productName: item['productName'],
-                              expirationDate: item['expiredDate'],
-                              oldPrice: item['originalPrice'],
-                              newPrice: item['salePrice'],
-                              imageAsset: item['imageUrl'],
-                              productData: item,
-                            );
-                          },
                         ),
-                      ),
+                      if (!listProducts.isEmpty)
+                        Expanded(
+                          child: GridView.builder(
+                            padding: EdgeInsets.all(16),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 3 / 4,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                            ),
+                            itemCount: listProducts.length,
+                            itemBuilder: (context, index) {
+                              final item = listProducts[index];
+                              return ProductCard(
+                                productName: item['productName'],
+                                expirationDate: item['expiredDate'],
+                                oldPrice: item['originalPrice'],
+                                newPrice: item['salePrice'],
+                                imageAsset: item['imageUrl'],
+                                productData: item,
+                              );
+                            },
+                          ),
+                        ),
                       Container(
                         padding: EdgeInsets.all(16),
                         color: Colors.white,

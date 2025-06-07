@@ -32,80 +32,13 @@ class _CartlistState extends State<Cartlist> {
       ),
       body: Column(
         children: [
-          Expanded( 
+          Expanded(
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Card(
-                      color: Colors.grey[200],
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "ที่อยู่สำหรับจัดส่ง",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            GestureDetector(
-                              onTap: () {
-                                // ฟังก์ชันเมื่อกดปุ่ม
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 20, horizontal: 20),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.grey[300]!,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(Icons.location_on_outlined,
-                                            color: Colors.grey[600], size: 24),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'เลือกตำแหน่งที่ตั้ง',
-                                          style: TextStyle(
-                                            fontFamily: GoogleFonts.mitr()
-                                                .fontFamily,
-                                            color: Colors.grey[800],
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Icon(Icons.arrow_forward_ios_outlined,
-                                        color: Colors.grey[600], size: 20),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 16),
                     Card(
                       color: Colors.grey[200],
@@ -135,8 +68,8 @@ class _CartlistState extends State<Cartlist> {
                             Row(
                               children: [
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 16.0, top: 8.0),
+                                  padding: const EdgeInsets.only(
+                                      left: 16.0, top: 8.0),
                                   child: Text(
                                     "หมดอายุวันที่ 25 / 7 / 2567 ",
                                     style: TextStyle(
@@ -148,8 +81,8 @@ class _CartlistState extends State<Cartlist> {
                                 ),
                                 Spacer(),
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.only(right: 16.0, top: 8.0),
+                                  padding: const EdgeInsets.only(
+                                      right: 16.0, top: 8.0),
                                   child: Text(
                                     "จำนวน :",
                                     style: TextStyle(

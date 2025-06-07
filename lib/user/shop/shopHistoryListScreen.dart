@@ -24,6 +24,8 @@ class HistoryListScreenState extends State<HistoryListScreen> {
   bool isLoading = true;
   MediaType mediaType = MediaType('application', 'json');
   var pathAPI = '';
+  var fname = '';
+  var lname = '';
   @override
   void initState() {
     super.initState();
@@ -66,6 +68,8 @@ class HistoryListScreenState extends State<HistoryListScreen> {
 
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+      fname = prefs.getString('username') ?? '';
+      lname = prefs.getString('lastname') ?? '';
     });
     print(pathAPI);
   }
@@ -140,8 +144,8 @@ class HistoryListScreenState extends State<HistoryListScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Guest',
+                            Text(
+                              '$fname $lname',
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),

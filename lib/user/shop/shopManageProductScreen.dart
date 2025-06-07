@@ -18,6 +18,8 @@ class ManageProductScreenState extends State<ManageProductScreen> {
   bool isLoading = true;
   MediaType mediaType = MediaType('application', 'json');
   var pathAPI = '';
+  var fname = '';
+  var lname = '';
   @override
   void initState() {
     super.initState();
@@ -39,6 +41,8 @@ class ManageProductScreenState extends State<ManageProductScreen> {
 
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+      fname = prefs.getString('username') ?? '';
+      lname = prefs.getString('lastname') ?? '';
     });
     print(pathAPI);
   }
@@ -106,8 +110,8 @@ class ManageProductScreenState extends State<ManageProductScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Guest',
+                            Text(
+                              '$fname $lname',
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+// import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -8,7 +9,7 @@ import 'dart:convert';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/reportShop.dart';
-import 'package:latlong2/latlong.dart'; // for LatLng
+// import 'package:latlong2/latlong.dart'; // for LatLng
 
 class Shopdetail extends StatefulWidget {
   final Map<String, dynamic> shopData;
@@ -115,7 +116,7 @@ class _ShopdetailState extends State<Shopdetail> {
     late double longitude;
     String location = 'Unknown location';
 
-    Future<void> _getCurrentLocation() async {
+    Future<void> getCurrentLocation() async {
       bool serviceEnabled;
       LocationPermission permission;
 
@@ -155,12 +156,12 @@ class _ShopdetailState extends State<Shopdetail> {
       setState(() {
         location = 'Lat: ${position.latitude}, Lng: ${position.longitude}';
       });
-      print('Current location: $location');
+      debugPrint('Current location: $location');
     }
 
     initState() {
       super.initState();
-      _getCurrentLocation();
+      getCurrentLocation();
     }
 
     // void _refreshMap() {
@@ -203,45 +204,72 @@ class _ShopdetailState extends State<Shopdetail> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                            height: 200,
-                            child: FlutterMap(
-                              options: MapOptions(
-                                initialCenter: LatLng(
-                                    latitude, longitude), // ตำแหน่งที่อยู่
-                                maxZoom: 15.0,
-                              ),
-                              children: [
-                                TileLayer(
-                                  urlTemplate:
-                                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                  subdomains: ['a', 'b', 'c'],
-                                ),
-                                MarkerLayer(
-                                  markers: [
-                                    Marker(
-                                      point: LatLng(latitude, longitude),
-                                      width: 40,
-                                      height: 40,
-                                      child: Container(
-                                        width: 10,
-                                        height: 10,
-                                        decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          Icons.location_on,
-                                          size: 20,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            )),
-                        SizedBox(height: 16),
+                        // TODO: google map disply place
+                        // Container(
+                        //   height: 200,
+                        //   decoration: BoxDecoration(
+                        //     borderRadius: BorderRadius.circular(8),
+                        //   ),
+                        //   child: ClipRRect(
+                        //     borderRadius: BorderRadius.circular(8),
+                        //     child: GoogleMap(
+                        //       onMapCreated: (GoogleMapController controller) {
+                        //         // Optional: Store controller for future use
+                        //       },
+                        //       initialCameraPosition: CameraPosition(
+                        //         target: LatLng(
+                        //           shopData?['shopLocation_th']?['lat']
+                        //                   ?.toDouble() ??
+                        //               0.0,
+                        //           shopData?['shopLocation_th']?['lng']
+                        //                   ?.toDouble() ??
+                        //               0.0,
+                        //         ),
+                        //         zoom: 15.0,
+                        //       ),
+                        //       markers: {
+                        //         Marker(
+                        //           markerId: const MarkerId('location_1'),
+                        //           position: LatLng(
+                        //             shopData?['shopLocation_th']?['lat']
+                        //                     ?.toDouble() ??
+                        //                 0.0,
+                        //             shopData?['shopLocation_th']?['lng']
+                        //                     ?.toDouble() ??
+                        //                 0.0,
+                        //           ),
+                        //           icon: BitmapDescriptor.defaultMarkerWithHue(
+                        //               BitmapDescriptor.hueRed),
+                        //         ),
+                        //         Marker(
+                        //           markerId: const MarkerId('location_2'),
+                        //           position: LatLng(
+                        //             // Add your second location coordinates here
+                        //             shopData?['secondLocation']?['lat']
+                        //                     ?.toDouble() ??
+                        //                 0.0,
+                        //             shopData?['secondLocation']?['lng']
+                        //                     ?.toDouble() ??
+                        //                 0.0,
+                        //           ),
+                        //           icon: BitmapDescriptor.defaultMarkerWithHue(
+                        //               BitmapDescriptor.hueBlue),
+                        //         ),
+                        //       },
+                        //       mapType: MapType.normal,
+                        //       myLocationEnabled: false,
+                        //       myLocationButtonEnabled: false,
+                        //       zoomControlsEnabled: true,
+                        //       mapToolbarEnabled: false,
+                        //       compassEnabled: true,
+                        //       rotateGesturesEnabled: true,
+                        //       scrollGesturesEnabled: true,
+                        //       tiltGesturesEnabled: true,
+                        //       zoomGesturesEnabled: true,
+                        //     ),
+                        //   ),
+                        // ),
+                        // SizedBox(height: 16),
                         Text(
                           shopData?['name'],
                           style: TextStyle(

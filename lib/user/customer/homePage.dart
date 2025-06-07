@@ -248,7 +248,7 @@ class _HomepageState extends State<Homepage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'ร้านค้ากำลังลดราคา',
+                            'ร้านค้าที่กำลังลดราคา',
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
