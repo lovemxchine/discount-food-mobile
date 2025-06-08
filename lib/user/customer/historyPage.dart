@@ -49,7 +49,7 @@ class _HistorypageState extends State<Historypage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'ชาญณรงค์ ชาญเฌอ',
+                            'เอกพล แก้วก้อนน้อย',
                             style: TextStyle(fontSize: 18, color: Colors.white),
                           ),
                           SizedBox(height: 5),

@@ -259,7 +259,7 @@ class _SettingsUserPageState extends State<SettingsUserPage> {
                                                             child: const Row(
                                                                 children: [
                                                                   Text(
-                                                                    "รายละเอียดบัญชีของฉัน",
+                                                                    "ข้อมูลบัญชี",
                                                                     style:
                                                                         TextStyle(
                                                                       fontSize:

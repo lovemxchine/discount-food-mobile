@@ -50,7 +50,7 @@ class _MailBoxPageState extends State<MailBoxPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'ชาญณรงค์ ชาญเฌอ',
+                              'เอกพล แก้วก้อนน้อย',
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),
