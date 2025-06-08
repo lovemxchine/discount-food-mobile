@@ -3,9 +3,11 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:mobile/provider/cart_model.dart';
 import 'package:mobile/user/customer/cartList.dart';
 import 'package:mobile/user/customer/productDetail.dart';
 import 'package:mobile/user/customer/shopDetail.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String formatExpiredDate(String dateStr) {
@@ -21,7 +23,6 @@ class ProductInShop extends StatefulWidget {
 }
 
 class _ProductInShopState extends State<ProductInShop> {
-  int cartCount = 12;
   bool _isLoading = false;
   List listProducts = [];
   String pathAPI = '';
@@ -63,6 +64,8 @@ class _ProductInShopState extends State<ProductInShop> {
 
   @override
   Widget build(BuildContext context) {
+    final cartCount = Provider.of<CartModel>(context, listen: true).count;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -143,62 +146,93 @@ class _ProductInShopState extends State<ProductInShop> {
                           ],
                         ),
                       ),
-                      Expanded(
-                        child: GridView.builder(
-                          padding: EdgeInsets.all(16),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 3 / 4,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
+                      if (listProducts.isEmpty)
+                        Expanded(
+                          child: GridView.builder(
+                            padding: EdgeInsets.all(16),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 1,
+                                    childAspectRatio: 1,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 12),
+                            itemCount: 1,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  'ไม่มีสินค้าที่ลดราคาในขณะนี้',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          itemCount: listProducts.length,
-                          itemBuilder: (context, index) {
-                            final item = listProducts[index];
-                            return ProductCard(
-                              productName: item['productName'],
-                              expirationDate: item['expiredDate'],
-                              oldPrice: item['originalPrice'],
-                              newPrice: item['salePrice'],
-                              imageAsset: item['imageUrl'],
-                              productData: item,
-                            );
-                          },
                         ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(16),
-                        color: Colors.white,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                      if (!listProducts.isEmpty)
+                        Expanded(
+                          child: GridView.builder(
+                            padding: EdgeInsets.all(16),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 3 / 4,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                            ),
+                            itemCount: listProducts.length,
+                            itemBuilder: (context, index) {
+                              final item = listProducts[index];
+                              return ProductCard(
+                                productName: item['productName'],
+                                expirationDate: item['expiredDate'],
+                                oldPrice: item['originalPrice'],
+                                newPrice: item['salePrice'],
+                                imageAsset: item['imageUrl'],
+                                productData: item,
+                              );
+                            },
+                          ),
+                        ),
+                      if (!listProducts.isEmpty)
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          color: Colors.white,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  cartCount <= 0 ? Colors.grey : Colors.green,
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () {
+                              if (cartCount <= 0) return;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Cartlist()),
+                              );
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  cartCount <= 0
+                                      ? 'ไม่มีสินค้าในตะกร้า'
+                                      : '$cartCount ตะกร้าสินค้า',
+                                  style: TextStyle(
+                                      fontSize: 18, color: Colors.white),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(Icons.shopping_cart, color: Colors.white),
+                              ],
                             ),
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Cartlist()),
-                            );
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$cartCount ตะกร้าสินค้า',
-                                style: TextStyle(
-                                    fontSize: 18, color: Colors.white),
-                              ),
-                              SizedBox(width: 8),
-                              Icon(Icons.shopping_cart, color: Colors.white),
-                            ],
-                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -214,17 +248,28 @@ class _ProductInShopState extends State<ProductInShop> {
               width: double.infinity,
               height: 200,
               child: Image.network(
-                widget.shopData['imgUrl']['shopCoverUrl'] ??
-                    'https://via.placeholder.com/150',
+                widget.shopData['imgUrl']['shopCoverUrl'],
                 fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset('assets/images/alt.png');
+                },
               ),
             ),
           ),
+
           Positioned(
             top: 40,
             left: 12,
             child: FloatingActionButton(
               onPressed: () {
+                Provider.of<CartModel>(context, listen: false).clear();
+
                 Navigator.pop(context);
               },
               child: Icon(
@@ -294,6 +339,12 @@ class ProductCard extends StatelessWidget {
                   child: Image.network(
                     imageAsset,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    },
                     errorBuilder: (context, error, stackTrace) {
                       return Image.asset('assets/images/alt.png');
                     },

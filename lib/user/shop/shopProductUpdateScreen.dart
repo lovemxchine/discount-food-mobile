@@ -52,6 +52,8 @@ class _ProductUpdateScreenState extends State<ProductUpdateScreen> {
   Future<void> updateProd() async {
     try {
       String? uid = await getUID();
+      print("pathAPI");
+      print(pathAPI);
       String prodID = widget.productData['productId'];
       print(uid);
       print(prodID);

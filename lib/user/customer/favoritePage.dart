@@ -329,8 +329,17 @@ class _FavoritePageState extends State<FavoritePage> {
                                                   ],
                                                 ),
                                               ),
-                                              const Icon(Icons.favorite,
-                                                  color: Colors.red),
+                                              InkWell(
+                                                onTap: () {
+                                                  updateFav(item['uid']);
+                                                  setState(() {
+                                                    listProducts.remove(item);
+                                                    filteredItems.remove(item);
+                                                  });
+                                                },
+                                                child: Icon(Icons.favorite,
+                                                    color: Colors.red),
+                                              ),
                                             ],
                                           ),
                                         ),

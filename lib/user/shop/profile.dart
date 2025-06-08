@@ -25,6 +25,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   MediaType mediaType = MediaType('application', 'json');
   bool isDetail = false;
   var pathAPI = '';
+  var fname = '';
+  var lname = '';
   @override
   void initState() {
     super.initState();
@@ -47,6 +49,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+      fname = prefs.getString('username') ?? '';
+      lname = prefs.getString('lastname') ?? '';
     });
     print(pathAPI);
   }
@@ -132,8 +136,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Guest',
+                            Text(
+                              '$fname $lname',
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),

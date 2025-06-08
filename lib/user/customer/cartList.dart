@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:mobile/provider/cart_model.dart';
 import 'package:mobile/user/customer/payment.dart';
+import 'package:provider/provider.dart';
 
 class Cartlist extends StatefulWidget {
   const Cartlist({super.key});
@@ -12,8 +15,15 @@ class Cartlist extends StatefulWidget {
 class _CartlistState extends State<Cartlist> {
   int quantity = 1;
 
+  String formatExpiredDate(String dateStr) {
+    DateTime dateTime = DateTime.parse(dateStr);
+    return DateFormat('dd/MM/yyyy').format(dateTime);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartModel>(context, listen: true);
+    print(cart.total);
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -32,80 +42,13 @@ class _CartlistState extends State<Cartlist> {
       ),
       body: Column(
         children: [
-          Expanded( 
+          Expanded(
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Card(
-                      color: Colors.grey[200],
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "ที่อยู่สำหรับจัดส่ง",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            GestureDetector(
-                              onTap: () {
-                                // ฟังก์ชันเมื่อกดปุ่ม
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 20, horizontal: 20),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.grey[300]!,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(Icons.location_on_outlined,
-                                            color: Colors.grey[600], size: 24),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'เลือกตำแหน่งที่ตั้ง',
-                                          style: TextStyle(
-                                            fontFamily: GoogleFonts.mitr()
-                                                .fontFamily,
-                                            color: Colors.grey[800],
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Icon(Icons.arrow_forward_ios_outlined,
-                                        color: Colors.grey[600], size: 20),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 16),
                     Card(
                       color: Colors.grey[200],
@@ -121,119 +64,146 @@ class _CartlistState extends State<Cartlist> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 16.0),
-                              child: Text(
-                                "ข้าวคลุกกะปิ",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
+                            for (var item in cart.items)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 16.0),
+                                    child: Text(
+                                      item['productName'] ?? 'ชื่อสินค้า',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 16.0, top: 8.0),
+                                        child: Text(
+                                          "หมดอายุวันที่ ${formatExpiredDate(item['expiredDate'])}",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                            color: Colors.grey[500],
+                                          ),
+                                        ),
+                                      ),
+                                      Spacer(),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            right: 16.0, top: 8.0),
+                                        child: Text(
+                                          "จำนวน :",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 16, top: 8.0),
+                                        child: Text(
+                                          "ราคา : ${item['salePrice']} บาท",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                            color: Colors.grey[500],
+                                          ),
+                                        ),
+                                      ),
+                                      Spacer(),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 0),
+                                        child: IconButton(
+                                          icon:
+                                              Icon(Icons.remove_circle_outline),
+                                          iconSize: 18,
+                                          color: Colors.grey[400],
+                                          onPressed: () {
+                                            setState(() {
+                                              setState(() {
+                                                Provider.of<CartModel>(context,
+                                                        listen: false)
+                                                    .decrement(
+                                                        item['productId']);
+                                              });
+                                              if (quantity > 1) quantity--;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey,
+                                            width: 2,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          color: Colors.white,
+                                        ),
+                                        child: Text(
+                                          "${item['quantity']}",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 0),
+                                        child: IconButton(
+                                          icon: Icon(Icons.add_circle_outline),
+                                          iconSize: 18,
+                                          color: Colors.grey[400],
+                                          onPressed: () {
+                                            var cartModel =
+                                                Provider.of<CartModel>(context,
+                                                        listen: false)
+                                                    .getByProductId(
+                                                        item['productId']);
+                                            if (cartModel?['stock'] -
+                                                    item['quantity'] >
+                                                0)
+                                              setState(() {
+                                                Provider.of<CartModel>(context,
+                                                        listen: false)
+                                                    .add(
+                                                  item,
+                                                  quantity,
+                                                );
+                                              });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 16.0, top: 8.0),
-                                  child: Text(
-                                    "หมดอายุวันที่ 25 / 7 / 2567 ",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                ),
-                                Spacer(),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(right: 16.0, top: 8.0),
-                                  child: Text(
-                                    "จำนวน :",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 16, top: 8.0),
-                                  child: Text(
-                                    "ราคา : 24.00 บาท",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                ),
-                                Spacer(),
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 0),
-                                  child: IconButton(
-                                    icon: Icon(Icons.remove_circle_outline),
-                                    iconSize: 24,
-                                    color: Colors.grey[400],
-                                    onPressed: () {
-                                      setState(() {
-                                        if (quantity > 1) quantity--;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                      width: 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.white,
-                                  ),
-                                  child: Text(
-                                    '$quantity',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 0),
-                                  child: IconButton(
-                                    icon: Icon(Icons.add_circle_outline),
-                                    iconSize: 24,
-                                    color: Colors.grey[400],
-                                    onPressed: () {
-                                      setState(() {
-                                        quantity++;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
                             SizedBox(height: 16),
                             Divider(),
-                            SizedBox(height: 16),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.only(left: 16),
                                   child: Text(
-                                    "ค่าอาหาร : 24 บาท",
+                                    "ค่าอาหาร : ${cart.total} บาท",
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.normal,
@@ -241,19 +211,6 @@ class _CartlistState extends State<Cartlist> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 4),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 16),
-                                  child: Text(
-                                    "ค่าจัดส่ง : 33 บาท",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 4),
                                 Divider(),
                                 SizedBox(height: 4),
                                 Column(
@@ -335,7 +292,7 @@ class _CartlistState extends State<Cartlist> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "57.00 บาท",
+                      "${cart.total} บาท",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

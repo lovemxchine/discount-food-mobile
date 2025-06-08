@@ -23,6 +23,8 @@ class OrderListScreenState extends State<OrderListScreen> {
   bool isLoading = true;
   MediaType mediaType = MediaType('application', 'json');
   var pathAPI = '';
+  var fname = '';
+  var lname = '';
   @override
   void initState() {
     super.initState();
@@ -80,6 +82,8 @@ class OrderListScreenState extends State<OrderListScreen> {
 
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+      fname = prefs.getString('username') ?? '';
+      lname = prefs.getString('lastname') ?? '';
     });
     print(pathAPI);
   }
@@ -151,8 +155,8 @@ class OrderListScreenState extends State<OrderListScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Guest',
+                            Text(
+                              '$fname $lname',
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),

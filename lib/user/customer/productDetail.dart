@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobile/provider/cart_model.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String formatExpiredDate(String dateStr) {
@@ -19,20 +21,20 @@ class ProductDetail extends StatefulWidget {
 }
 
 class _ProductDetailState extends State<ProductDetail> {
-  int quantity = 1;
+  int quantity = 0;
   bool _isLoading = false;
   List listProducts = [];
   var pathAPI = '';
-
   @override
   void initState() {
     super.initState();
     initFetch();
+    print(widget.shopData);
   }
 
   Future<void> initFetch() async {
     await fetchUrl();
-    await fetchProduct();
+    // await fetchProduct();
   }
 
   Future<void> fetchUrl() async {
@@ -108,39 +110,47 @@ class _ProductDetailState extends State<ProductDetail> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  widget.shopData['productName'],
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'จำนวนคงเหลือ ${widget.shopData['stock']}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                  ),
-                                ),
+                                    "ชื่อสินค้า: ${widget.shopData['productName']}",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                                // widget.shopData['productName'],
+                                // style: TextStyle(
+                                //   fontSize: 18,
+                                //   fontWeight: FontWeight.bold,
+                                // ),
+                                // ),
                               ],
                             ),
                             SizedBox(height: 12),
+                            Text(
+                              'จำนวนคงเหลือ ${widget.shopData['stock']}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            SizedBox(height: 12),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   'ลดเหลือ : ${widget.shopData['salePrice']} บาท',
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
+                                    fontSize: 14,
+                                    color: Colors.green,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                SizedBox(width: 8),
                                 Text(
                                   'ราคาเดิม: ${widget.shopData['originalPrice']} บาท',
                                   style: TextStyle(
                                     fontSize: 14,
                                     decoration: TextDecoration.lineThrough,
-                                    color: Colors.grey,
+                                    decorationColor: Colors.red,
+                                    color: Colors.red,
                                   ),
                                 ),
                               ],
@@ -179,7 +189,20 @@ class _ProductDetailState extends State<ProductDetail> {
                   icon: Icon(Icons.remove),
                   onPressed: () {
                     setState(() {
-                      if (quantity > 1) quantity--;
+                      final cart =
+                          Provider.of<CartModel>(context, listen: false);
+                      final simplified = cart.items
+                          .map((item) => {
+                                "productName": item["productName"],
+                                "salePrice": item["salePrice"],
+                                "quantity": item["quantity"],
+                                "productId": item["productId"],
+                              })
+                          .toList();
+
+                      print(simplified);
+                      print(cart.count);
+                      if (quantity > 0) quantity--;
                     });
                   },
                 ),
@@ -193,25 +216,59 @@ class _ProductDetailState extends State<ProductDetail> {
                 IconButton(
                   icon: Icon(Icons.add),
                   onPressed: () {
+                    final cart = Provider.of<CartModel>(context, listen: false)
+                        .items
+                        .where((item) =>
+                            item["productId"] == widget.shopData["productId"])
+                        .toList();
+                    // print(widget.shopData['stock'] - cart[0]['quantity']);
+                    print(quantity);
                     setState(() {
-                      quantity++;
+                      // print(cart);
+                      int cartQuantity =
+                          cart.isNotEmpty && cart[0]['quantity'] != null
+                              ? cart[0]['quantity'] as int
+                              : 0;
+                      if (quantity <
+                          (widget.shopData['stock'] - cartQuantity)) {
+                        quantity++;
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('ไม่สามารถเพิ่มได้เกินจำนวนคงเหลือ')),
+                        );
+                      }
                     });
                   },
                 ),
                 ElevatedButton(
                   onPressed: () {
                     // ฟังก์ชันเมื่อกดปุ่มเพิ่มลงตะกร้าสินค้า
-                    print('เพิ่ม $quantity ชิ้นลงตะกร้า');
+                    print(widget.shopData);
+                    if (quantity <= 0) {
+                      return;
+                    }
+                    // Provider.of<CartModel>(context, listen: false).clear();
+
+                    Provider.of<CartModel>(context, listen: false).add(
+                      widget.shopData,
+                      quantity,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('เพิ่ม $quantity ชิ้นลงตะกร้า')),
+                    );
+                    Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: quantity <= 0 ? Colors.grey : Colors.green,
                     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: Text(
-                    'เพิ่มลงตะกร้าสินค้า',
+                    quantity <= 0 ? "ไม่สามารถเพิ่มได้" : 'เพิ่มลงตะกร้าสินค้า',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

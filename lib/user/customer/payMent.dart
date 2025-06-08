@@ -1,6 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile/components/textFieldComponent.dart';
+import 'package:mobile/provider/cart_model.dart';
 import 'package:mobile/user/customer/submitPayment.dart';
+import 'package:provider/provider.dart';
 
 class Payment extends StatefulWidget {
   const Payment({super.key});
@@ -10,6 +16,129 @@ class Payment extends StatefulWidget {
 }
 
 class _PaymentState extends State<Payment> {
+  File? _image;
+  final ImagePicker picker = ImagePicker();
+
+  void showPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Photo Library'),
+                onTap: () {
+                  getImage();
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Camera'),
+                onTap: () {
+                  openCamera(context);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<File?> cropImage(String imagePath) async {
+    try {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: imagePath,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 100,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'ปรับแต่งรูปภาพ',
+            toolbarColor: Colors.green,
+            toolbarWidgetColor: Colors.white,
+            backgroundColor: Colors.white,
+            activeControlsWidgetColor: Colors.green,
+            dimmedLayerColor: Colors.black.withOpacity(0.5),
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+            statusBarColor: Colors.green,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        return File(croppedFile.path);
+      }
+    } catch (e) {
+      print('Error cropping image: $e');
+      // Show error dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to crop image. Please try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+    return null;
+  }
+
+  Future<void> processImage(ImageSource source, bool isGemini) async {
+    try {
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 100,
+      );
+
+      if (pickedFile != null) {
+        final File? croppedImage = await cropImage(pickedFile.path);
+        if (croppedImage != null && mounted) {
+          print("_image $croppedImage");
+          setState(() {
+            _image = croppedImage;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error processing image: $e');
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to process image. Please try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future getImage() async {
+    await processImage(ImageSource.gallery, false);
+  }
+
+  Future<void> openCamera(BuildContext context) async {
+    await processImage(ImageSource.camera, false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,12 +196,19 @@ class _PaymentState extends State<Payment> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.asset(
-                                'assets/images/image.png',
-                                width: double.infinity,
-                                height: 300,
-                                fit: BoxFit.cover,
-                              ),
+                              child: _image != null
+                                  ? Image.file(
+                                      _image!,
+                                      width: double.infinity,
+                                      height: 300,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.asset(
+                                      'assets/images/alt.png',
+                                      width: double.infinity,
+                                      height: 300,
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                             SizedBox(height: 16),
                             Row(
@@ -194,7 +330,7 @@ class _PaymentState extends State<Payment> {
                                           ),
                                         ),
                                         Text(
-                                          "57.00 บาท",
+                                          "${Provider.of<CartModel>(context, listen: true).total} บาท",
                                           style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.normal,
@@ -204,7 +340,9 @@ class _PaymentState extends State<Payment> {
                                           height: 12,
                                         ),
                                         TextButton.icon(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            showPicker(context);
+                                          },
                                           icon: Icon(
                                             Icons.file_upload_outlined,
                                             color: Colors.black,

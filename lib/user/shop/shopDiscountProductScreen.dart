@@ -22,6 +22,8 @@ class DiscountProductScreenState extends State<DiscountProductScreen> {
   bool isLoading = true;
   MediaType mediaType = MediaType('application', 'json');
   var pathAPI = '';
+  var fname = '';
+  var lname = '';
   @override
   void initState() {
     super.initState();
@@ -64,6 +66,8 @@ class DiscountProductScreenState extends State<DiscountProductScreen> {
 
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+      fname = prefs.getString('username') ?? '';
+      lname = prefs.getString('lastname') ?? '';
     });
     print(pathAPI);
   }
@@ -132,8 +136,8 @@ class DiscountProductScreenState extends State<DiscountProductScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Guest',
+                            Text(
+                              '$fname $lname',
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),
@@ -269,8 +273,13 @@ class DiscountProductScreenState extends State<DiscountProductScreen> {
                                                         Row(
                                                           children: [
                                                             Text(
-                                                              listProducts[i][
-                                                                  'productName'],
+                                                              listProducts[i]['productName']
+                                                                          .length >
+                                                                      18
+                                                                  ? '${listProducts[i]['productName'].substring(0, 18)}...'
+                                                                  : listProducts[
+                                                                          i][
+                                                                      'productName'],
                                                               style: const TextStyle(
                                                                   fontSize: 12,
                                                                   color: Colors
