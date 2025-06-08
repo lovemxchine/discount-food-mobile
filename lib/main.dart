@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/components/bottomNav.dart';
 import 'package:mobile/components/bottomNavShop.dart';
 import 'package:mobile/firebase_options.dart';
+import 'package:mobile/provider/cart_model.dart';
 import 'package:mobile/user/customer/cartList.dart';
 import 'package:mobile/user/customer/historyPage.dart';
 import 'package:mobile/user/customer/homePage.dart';
@@ -29,6 +30,7 @@ import 'package:mobile/user/shop/shopAddProductScreen.dart';
 import 'package:mobile/user/shop/shopMainScreen.dart';
 import 'package:mobile/user/shop/shopManageProductScreen.dart';
 import 'package:mobile/user/shop/shopProductDetailScreen.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -37,7 +39,10 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+    create: (_) => CartModel(),
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatefulWidget {

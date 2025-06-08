@@ -6,6 +6,7 @@ import 'package:mobile/components/bottomNav.dart';
 import 'package:mobile/user/customer/homePage.dart';
 import 'package:mobile/user/customer/mailBox.dart';
 import 'package:mobile/user/customer/favoritePage.dart';
+import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/settingsPage.dart';
 import 'package:mobile/utils/func/fetchData.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -124,7 +125,8 @@ class _AllShopNearbyState extends State<AllShopNearby> {
 
     final result = await getData(
         '$pathAPI/shop/nearbyShop?lat=${position.latitude}&lng=${position.longitude}');
-
+    print(
+        '$pathAPI/shop/nearbyShop?lat=${position.latitude}&lng=${position.longitude}');
     if (result['status'] == "success") {
       setState(() {
         listProducts = result['data'];
@@ -272,106 +274,142 @@ class _AllShopNearbyState extends State<AllShopNearby> {
                               child: CircularProgressIndicator(),
                             )
                           : SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  ...listProducts.map((item) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 20),
-                                      child: InkWell(
-                                        onTap: () {},
-                                        child: Container(
-                                          height: 90,
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                color: Colors.black26,
-                                                blurRadius: 1,
-                                                offset: Offset(0, 4),
-                                              ),
-                                            ],
+                              child: listProducts.isEmpty
+                                  ? const Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Center(
+                                          child: Text(
+                                            'ไม่มีร้านค้าใกล้เคียง',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.grey),
                                           ),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                width: 80,
-                                                height: 80,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey,
-                                                  image: DecorationImage(
-                                                    image: NetworkImage(item[
-                                                                'imgUrl']
-                                                            ['shopUrl'] ??
-                                                        'https://via.placeholder.com/150'),
-                                                    fit: BoxFit.cover,
+                                        ),
+                                      ],
+                                    )
+                                  : Column(
+                                      children: [
+                                        ...listProducts.map((item) {
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 20),
+                                            child: InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ProductInShop(
+                                                      shopData: item,
+                                                    ),
                                                   ),
+                                                );
+                                              },
+                                              child: Container(
+                                                height: 90,
+                                                padding:
+                                                    const EdgeInsets.all(12),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
                                                   borderRadius:
-                                                      BorderRadius.circular(5),
+                                                      BorderRadius.circular(12),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                      color: Colors.black26,
+                                                      blurRadius: 1,
+                                                      offset: Offset(0, 4),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ),
-                                              const SizedBox(width: 20),
-                                              Expanded(
-                                                child: Column(
+                                                child: Row(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    Text(
-                                                      item['name'],
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: Colors.black,
+                                                    Container(
+                                                      width: 80,
+                                                      height: 80,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey,
+                                                        image: DecorationImage(
+                                                          image: NetworkImage(item[
+                                                                      'imgUrl']
+                                                                  ['shopUrl'] ??
+                                                              'https://via.placeholder.com/150'),
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5),
                                                       ),
                                                     ),
-                                                    const SizedBox(height: 5),
-                                                    Text(
-                                                      'เวลาเปิด-ปิด: ${item['openTime'] ?? '10:00'} - ${item['closeTime'] ?? '22:00'}',
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: Colors.black,
+                                                    const SizedBox(width: 20),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            item['name'],
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 12,
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 5),
+                                                          Text(
+                                                            'เวลาเปิด-ปิด: ${item['openTime'] ?? '10:00'} - ${item['closeTime'] ?? '22:00'}',
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 12,
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    InkWell(
+                                                      onTap: () {
+                                                        updateFav(item['uid']);
+                                                        setState(() {
+                                                          initFetch();
+                                                        });
+                                                      },
+                                                      child: Icon(
+                                                        userProfileData?[
+                                                                        'favShop']
+                                                                    ?.contains(item[
+                                                                        'uid']) ??
+                                                                false
+                                                            ? Icons.favorite
+                                                            : Icons
+                                                                .favorite_border,
+                                                        color: Colors.red,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                              InkWell(
-                                                onTap: () {
-                                                  updateFav(item['uid']);
-                                                  setState(() {
-                                                    initFetch();
-                                                  });
-                                                },
-                                                child: Icon(
-                                                  userProfileData?['favShop']
-                                                              ?.contains(item[
-                                                                  'uid']) ??
-                                                          false
-                                                      ? Icons.favorite
-                                                      : Icons.favorite_border,
-                                                  color: Colors.red,
-                                                ),
-                                              ),
-                                            ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                        Container(
+                                          height: 90,
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.transparent,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  Container(
-                                    height: 90,
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.transparent,
-                                      borderRadius: BorderRadius.circular(12),
+                                        )
+                                      ],
                                     ),
-                                  )
-                                ],
-                              ),
                             ),
                     ),
                   ],
