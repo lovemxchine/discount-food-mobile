@@ -324,6 +324,15 @@ class HistoryListScreenState extends State<HistoryListScreen> {
                                           ),
                                         ),
                                       ),
+                                  Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 20),
+                                      child: Container(
+                                        height: 80,
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                            color: Colors.transparent),
+                                      ))
                                 ],
                               ),
                       ),

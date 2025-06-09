@@ -1,15 +1,20 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/components/textFieldComponent.dart';
 import 'package:mobile/provider/cart_model.dart';
 import 'package:mobile/user/customer/submitPayment.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class Payment extends StatefulWidget {
-  const Payment({super.key});
+  final String shopId;
+  const Payment({super.key, required this.shopId});
 
   @override
   State<Payment> createState() => _PaymentState();
@@ -137,6 +142,52 @@ class _PaymentState extends State<Payment> {
 
   Future<void> openCamera(BuildContext context) async {
     await processImage(ImageSource.camera, false);
+  }
+
+  Future<String> fetchUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+  }
+
+  Future<String?> getUID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_uid');
+  }
+
+  Future<void> requestOrder() async {
+    String? uid = await getUID();
+    var pathAPI = await fetchUrl();
+    final url = Uri.parse("$pathAPI/customer/orderRequest");
+    final cartData = Provider.of<CartModel>(context, listen: false);
+    try {
+      var request = http.MultipartRequest('POST', url);
+      request.fields['customerUid'] = uid ?? '';
+      request.fields['shopUid'] = widget.shopId;
+      request.fields['list'] = jsonEncode(cartData.items);
+      request.fields['total'] = cartData.total.toString();
+      if (_image != null) {
+        request.files
+            .add(await http.MultipartFile.fromPath('image', _image!.path));
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      final responseData = jsonDecode(response.body);
+      print("Response data: $responseData");
+      if (response.statusCode == 200) {
+        print("API response: ${response.body}");
+        // Provider.of<CartModel>(context, listen: false).clear();
+        if (mounted) {
+          Navigator.of(context).pop(); // Close the dialog
+        }
+      } else {
+        print("Failed to load data: ${response.statusCode}");
+        // Handle the error accordingly
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+      // Handle the error accordingly
+    }
   }
 
   @override
@@ -389,13 +440,14 @@ class _PaymentState extends State<Payment> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: _image != null ? Colors.green : Colors.grey,
                 padding: EdgeInsets.all(14.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
               onPressed: () {
+                if (_image == null) return;
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
@@ -404,7 +456,66 @@ class _PaymentState extends State<Payment> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Submitpayment(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey,
+                            width: 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 56, vertical: 36),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "ยืนยันการชำระเงินเรียบร้อย",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                "กรุณารอการยืนยันจากร้านค้า...",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.grey[400],
+                                ),
+                              ),
+                              SizedBox(height: 36),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  await requestOrder();
+                                  Navigator.pop(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  side:
+                                      BorderSide(color: Colors.grey, width: 1),
+                                  backgroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 44, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                child: Text(
+                                  "ยืนยัน",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
                   },
                 );
@@ -413,7 +524,7 @@ class _PaymentState extends State<Payment> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "ชำระเงิน",
+                    (_image == null) ? "กรุณาเพิ่มสลีปการจ่ายตัง" : "ชำระเงิน",
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.white,
@@ -424,75 +535,6 @@ class _PaymentState extends State<Payment> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class Submitpayment extends StatefulWidget {
-  const Submitpayment({super.key});
-
-  @override
-  State<Submitpayment> createState() => _SubmitpaymentState();
-}
-
-class _SubmitpaymentState extends State<Submitpayment> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey,
-          width: 1.0,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 36),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "ยืนยันการชำระเงินเรียบร้อย",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              "กรุณารอการยืนยันจากร้านค้า...",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: Colors.grey[400],
-              ),
-            ),
-            SizedBox(height: 36),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                side: BorderSide(color: Colors.grey, width: 1),
-                backgroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 44, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              child: Text(
-                "ยืนยัน",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

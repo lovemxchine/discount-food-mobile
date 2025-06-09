@@ -252,10 +252,6 @@ class _HomepageState extends State<Homepage> {
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          Text(
-                            'ดูทั้งหมด',
-                            style: TextStyle(fontSize: 16, color: Colors.blue),
-                          ),
                         ],
                       ),
                     ),

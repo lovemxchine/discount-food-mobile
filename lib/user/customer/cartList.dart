@@ -6,7 +6,9 @@ import 'package:mobile/user/customer/payment.dart';
 import 'package:provider/provider.dart';
 
 class Cartlist extends StatefulWidget {
-  const Cartlist({super.key});
+  final String shopId;
+
+  const Cartlist({super.key, required this.shopId});
 
   @override
   State<Cartlist> createState() => _CartlistState();
@@ -133,14 +135,16 @@ class _CartlistState extends State<Cartlist> {
                                           color: Colors.grey[400],
                                           onPressed: () {
                                             setState(() {
-                                              setState(() {
-                                                Provider.of<CartModel>(context,
-                                                        listen: false)
-                                                    .decrement(
-                                                        item['productId']);
-                                              });
-                                              if (quantity > 1) quantity--;
+                                              Provider.of<CartModel>(context,
+                                                      listen: false)
+                                                  .decrement(item['productId']);
                                             });
+                                            if (Provider.of<CartModel>(context,
+                                                        listen: false)
+                                                    .count <=
+                                                0) {
+                                              Navigator.pop(context);
+                                            }
                                           },
                                         ),
                                       ),
@@ -305,7 +309,8 @@ class _CartlistState extends State<Cartlist> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => Payment()),
+                      MaterialPageRoute(
+                          builder: (context) => Payment(shopId: widget.shopId)),
                     );
                   },
                   style: ElevatedButton.styleFrom(

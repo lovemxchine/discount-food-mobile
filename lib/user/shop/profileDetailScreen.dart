@@ -187,7 +187,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       if (response.statusCode == 200) {
         print("API response: ${response.body}");
         final responseData = jsonDecode(response.body);
-        setState(() {});
+
       } else {
         print("Failed to load data: ${response.statusCode}");
         // Handle the error accordingly

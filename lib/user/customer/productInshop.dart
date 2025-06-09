@@ -214,7 +214,8 @@ class _ProductInShopState extends State<ProductInShop> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => Cartlist()),
+                                    builder: (context) => Cartlist(
+                                        shopId: widget.shopData['uid'])),
                               );
                             },
                             child: Row(

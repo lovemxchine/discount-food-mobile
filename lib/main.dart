@@ -95,8 +95,8 @@ class _MyAppState extends State<MyApp> {
 
           ///'/customer/productInshop': (context) => ProductInShop(),
           //'/customer/shopDetail': (context) => Shopdetail(),
-          '/customer/cartList': (context) => Cartlist(),
-          '/customer/payMent': (context) => Payment(),
+          // '/customer/cartList': (context) => Cartlist(),
+          // '/customer/payMent': (context) => Payment(),
           '/customer/historyPage': (context) => Historypage(),
           //'/customer/reportShop': (context) => Reportshop(),
           //'/customer/submitPayment': (context) => Submitpayment(),
