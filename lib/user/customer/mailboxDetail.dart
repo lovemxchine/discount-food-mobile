@@ -169,7 +169,7 @@ class _MailBoxDetailPageState extends State<MailBoxDetailPage> {
                                         style: TextStyle(fontSize: 14),
                                       ),
                                       Text(
-                                        '092-881-80v0',
+                                        '092-881-8000',
                                         style: TextStyle(fontSize: 14),
                                       ),
                                     ],

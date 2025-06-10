@@ -16,15 +16,15 @@ class MailBoxPage extends StatefulWidget {
   State<MailBoxPage> createState() => _MailBoxPageState();
 }
 
+Future<String> fetchUrl() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
+}
+
 class _MailBoxPageState extends State<MailBoxPage> {
   Map<String, dynamic>? userProfileData;
   bool _isLoading = true;
   // var pathAPI = '';
-
-  Future<String> fetchUrl() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
-  }
 
   Future<String?> getUID() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -312,14 +312,38 @@ class _MailBoxPageState extends State<MailBoxPage> {
                                   padding: EdgeInsets.only(
                                       top: index == 0 ? 16 : 8, bottom: 8),
                                   child: InkWell(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return _buildMailBoxDetailPopup(
-                                              context, index);
-                                        },
-                                      );
+                                    onTap: () async {
+                                      // TODO: send data
+                                      final orderData;
+                                      var pathAPI = await fetchUrl();
+
+                                      final url = Uri.parse(
+                                          "$pathAPI/customer/fetchOrderDetail?orderId=${orderList[index]['orderId']}&shopUid=${orderList[index]['shopUid']}");
+
+                                      try {
+                                        var response = await http.get(url);
+                                        final Map<String, dynamic>
+                                            responseData =
+                                            json.decode(response.body);
+
+                                        if (response.statusCode == 200) {
+                                          if (!mounted)
+                                            return; // <--- เพิ่มบรรทัดนี้
+                                          orderData = responseData['data'];
+                                          print("ORDER DATA $orderData");
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return _buildMailBoxDetailPopup(
+                                                  context, index, orderData);
+                                            },
+                                          );
+                                        } else {
+                                          orderData = null;
+                                        }
+                                      } catch (e) {
+                                        print('Error: $e');
+                                      }
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -463,18 +487,29 @@ class DetailPage extends StatelessWidget {
   }
 }
 
-Widget _buildMailBoxDetailPopup(BuildContext context, int index) {
+Widget _buildMailBoxDetailPopup(
+    BuildContext context, int index, final orderData) {
   return Dialog(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
     ),
     elevation: 0,
     backgroundColor: Colors.transparent,
-    child: contentBox(context, index),
+    child: contentBox(context, index, orderData),
   );
 }
 
-Widget contentBox(BuildContext context, int index) {
+Widget contentBox(BuildContext context, int index, final orderData) {
+  String formatDateTime(String isoString) {
+    final dateTime = DateTime.parse(isoString).toLocal();
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final year = dateTime.year.toString();
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    return 'สั่งสินค้าเวลา: $day/$month/$year เวลา $hour.$minute';
+  }
+
   return Container(
     height: 600,
     padding: const EdgeInsets.all(20),
@@ -496,34 +531,15 @@ Widget contentBox(BuildContext context, int index) {
         ),
         const SizedBox(height: 10),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'รายละเอียดร้านค้า',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            const Text(
+              'เบอร์ติดต่อ : ',
+              style: TextStyle(fontSize: 12),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: const [
-                Text(
-                  'เบอร์ติดต่อ :',
-                  style: TextStyle(fontSize: 10),
-                ),
-                Text(
-                  '092-881-8000',
-                  style: TextStyle(fontSize: 10),
-                ),
-              ],
+            Text(
+              orderData['tel'] ?? "",
+              style: TextStyle(fontSize: 12),
             ),
           ],
         ),
@@ -535,40 +551,55 @@ Widget contentBox(BuildContext context, int index) {
         const SizedBox(height: 8),
         Center(
           child: Column(
-            children: const [
+            children: [
               Text(
-                'วันที่ 18 / 7 / 2567',
+                formatDateTime(orderData['orderAt']),
                 style: TextStyle(fontSize: 12),
               ),
+              const SizedBox(height: 5),
               Text(
-                'เวลาที่สั่งสินค้า : 21.00 น.',
-                style: TextStyle(fontSize: 12),
+                'สถานะ: ${orderData['status'] == 'Success' ? 'ยืนยันการจ่ายเงิน' : orderData['status'] == 'Pending Order' ? 'รอการยืนยัน' : 'ยกเลิกการสั่งซื้อ'}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: orderData['status'] == 'Success'
+                      ? Colors.green
+                      : orderData['status'] == 'Pending Order'
+                          ? Colors.amber
+                          : Colors.red,
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 5),
         Expanded(
           child: ListView(
             children: [
-              _buildProductItem(
-                'ข้าวคลุกกะปิ',
-                'หมดอายุวันที่ 25 / 7 / 2567',
-                'ราคา: 24.00 บาท',
-                'จำนวน: 2',
-              ),
-              _buildProductItem(
-                'ข้าวปลาซาบะ',
-                'หมดอายุวันที่ 25 / 7 / 2567',
-                'ราคา: 14.00 บาท',
-                'จำนวน: 1',
-              ),
-              _buildProductItem(
-                'ข้าวไก่ทอด',
-                'หมดอายุวันที่ 25 / 7 / 2567',
-                'ราคา: 30.00 บาท',
-                'จำนวน: 1',
-              ),
+              for (int i = 0; i < orderData['list'].length; i++)
+                _buildProductItem(
+                  orderData['list'][i]['foodName'] ?? 'ไม่ระบุชื่อสินค้า',
+                  '${orderData['list'][i]['expiryDate'] != null ? formatDateTime(DateTime.fromMillisecondsSinceEpoch(orderData['list'][i]['expiryDate']['_seconds'] * 1000).toUtc().toIso8601String()) : ""}',
+                  'ราคา: ${orderData['list'][i]['price']} บาท',
+                  'จำนวน: ${orderData['list'][i]['amount']}',
+                ),
+              // _buildProductItem(
+              //   'ข้าวคลุกกะปิ',
+              //   'หมดอายุวันที่ 25 / 7 / 2567',
+              //   'ราคา: 24.00 บาท',
+              //   'จำนวน: 2',
+              // ),
+              // _buildProductItem(
+              //   'ข้าวปลาซาบะ',
+              //   'หมดอายุวันที่ 25 / 7 / 2567',
+              //   'ราคา: 14.00 บาท',
+              //   'จำนวน: 1',
+              // ),
+              // _buildProductItem(
+              //   'ข้าวไก่ทอด',
+              //   'หมดอายุวันที่ 25 / 7 / 2567',
+              //   'ราคา: 30.00 บาท',
+              //   'จำนวน: 1',
+              // ),
             ],
           ),
         ),
@@ -577,11 +608,7 @@ Widget contentBox(BuildContext context, int index) {
           child: Column(
             children: const [
               Text(
-                'ค่าจัดส่ง + ค่าดำเนินการ : 141.00 + 33.00 บาท',
-                style: TextStyle(fontSize: 12),
-              ),
-              Text(
-                'รวม : 174.00 บาท',
+                'ราคา รวม : 174.00 บาท',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ],
