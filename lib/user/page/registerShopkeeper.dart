@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -461,6 +462,16 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     print(pathAPI);
   }
 
+  bool isValidEmail(String email) {
+    final emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
+    return emailRegex.hasMatch(email);
+  }
+
+  bool isValidPassword(String password) {
+    // Password must be at least 6 characters
+    return password.length >= 6;
+  }
+
   Future<void> _signUp() async {
     String email = emailController.text;
     String password = passwordController.text;
@@ -470,10 +481,11 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     // User? user;
     try {
       User? user = await _auth.signUpWithEmailAndPassword(email, password);
-      setState(() {
-        regisLoading = true;
-      });
+
       if (user != null) {
+        setState(() {
+          regisLoading = true;
+        });
         print('Sign up success');
         print(user);
         print(user.uid);
@@ -657,7 +669,31 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                             SizedBox(
                               width: 230,
                               child: ElevatedButton(
-                                onPressed: firstPageValidate ? nextPage : null,
+                                onPressed: firstPageValidate
+                                    ? () {
+                                        if (!isValidEmail(
+                                            emailController.text.trim())) {
+                                          Fluttertoast.showToast(
+                                            msg:
+                                                "กรุณากรอกรูปแบบอีเมลให้ถูกต้อง",
+                                            toastLength: Toast.LENGTH_SHORT,
+                                            gravity: ToastGravity.BOTTOM,
+                                          );
+                                          return;
+                                        }
+                                        if (!isValidPassword(
+                                            passwordController.text.trim())) {
+                                          Fluttertoast.showToast(
+                                            msg:
+                                                "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+                                            toastLength: Toast.LENGTH_SHORT,
+                                            gravity: ToastGravity.BOTTOM,
+                                          );
+                                          return;
+                                        }
+                                        nextPage();
+                                      }
+                                    : null,
                                 style: ElevatedButton.styleFrom(
                                   shadowColor: Colors.transparent,
                                   backgroundColor: firstPageValidate
@@ -868,13 +904,15 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                                 SizedBox(
                                   width: 280,
                                   child: ElevatedButton(
-                                    onPressed:
-                                        secondPageValidate ? nextPage : null,
+                                    onPressed: secondPageValidate && pinMap
+                                        ? nextPage
+                                        : null,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: secondPageValidate
-                                          ? Colors.blue
-                                          : const Color.fromARGB(
-                                              135, 199, 199, 199),
+                                      backgroundColor:
+                                          secondPageValidate && pinMap
+                                              ? Colors.blue
+                                              : const Color.fromARGB(
+                                                  135, 199, 199, 199),
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 16),
                                       shape: RoundedRectangleBorder(
@@ -882,7 +920,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                                       ),
                                     ),
                                     child: Text(
-                                      secondPageValidate
+                                      secondPageValidate && pinMap
                                           ? 'ดำเนินการต่อ'
                                           : 'กรุณากรอกข้อมูลให้ครบ',
                                       style: TextStyle(
@@ -1025,10 +1063,16 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                             child: SizedBox(
                               width: 230,
                               child: ElevatedButton(
-                                onPressed: firstPageValidate ? nextPage : null,
+                                onPressed: firstPageValidate &&
+                                        openTime != null &&
+                                        closeTime != null
+                                    ? nextPage
+                                    : null,
                                 style: ElevatedButton.styleFrom(
                                   shadowColor: Colors.transparent,
-                                  backgroundColor: firstPageValidate
+                                  backgroundColor: firstPageValidate &&
+                                          openTime != null &&
+                                          closeTime != null
                                       ? Colors.blue
                                       : Colors.grey,
                                   padding:
@@ -1103,10 +1147,18 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                           child: SizedBox(
                             width: 230,
                             child: ElevatedButton(
-                              onPressed: firstPageValidate ? nextPage : null,
+                              onPressed: firstPageValidate &&
+                                      ShopCoverImg != null &&
+                                      ShopImg != null &&
+                                      CertificateImg != null
+                                  ? nextPage
+                                  : null,
                               style: ElevatedButton.styleFrom(
                                 shadowColor: Colors.transparent,
-                                backgroundColor: firstPageValidate
+                                backgroundColor: firstPageValidate &&
+                                        ShopCoverImg != null &&
+                                        ShopImg != null &&
+                                        CertificateImg != null
                                     ? Colors.blue
                                     : Colors.grey,
                                 padding:
