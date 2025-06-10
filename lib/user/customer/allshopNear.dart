@@ -261,7 +261,7 @@ class _AllShopNearbyState extends State<AllShopNearby> {
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: const Text(
-                        'ร้านค้าที่กำลังลดราคาในระยะใกล้',
+                        'ร้านค้าที่กำลังลดราคาในระยะ 5 กิโลเมตร',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

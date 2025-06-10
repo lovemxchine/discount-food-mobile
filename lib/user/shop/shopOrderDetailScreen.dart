@@ -173,7 +173,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     style: const TextStyle(
                                       fontSize: 14,
                                     )),
-                                const SizedBox(width: 10),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
                                 const Text("เบอร์ติดต่อ: ",
                                     style: TextStyle(
                                       fontSize: 14,
@@ -237,101 +241,134 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            )),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Container(
-                                  width: 500,
-                                  height: 600,
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(height: 20),
-                                      const Text(
-                                        'หลักฐานการชำระเงิน',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Image.network(
-                                        widget.orderData['receiptUrl'] ??
-                                            'https://via.placeholder.com/150',
-                                        fit: BoxFit.cover,
-                                        width: 300,
-                                        height: 300,
-                                      ),
-                                      const SizedBox(height: 40),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        // crossAxisAlignment:/
-                                        // CrossAxisAlignment.center,
-                                        children: [
-                                          Spacer(),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.green,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              // Navigator.pop(context);
-                                              updateOrderProfile('Success');
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text(
-                                              'ยืนยัน',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 20),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              updateOrderProfile('Rejected');
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text(
-                                              'ปฎิเสธ',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                          Spacer(),
-                                        ],
-                                      ),
-                                    ],
+                    if (widget.orderData['status'] == 'Pending Order')
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              )),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        child: Container(
-                            child: const Text(
-                          'หลักฐานการชำระเงิน',
-                          style: TextStyle(color: Colors.white),
-                        ))),
+                                  child: Container(
+                                    width: 500,
+                                    height: 600,
+                                    child: Column(
+                                      children: [
+                                        const SizedBox(height: 20),
+                                        const Text(
+                                          'หลักฐานการชำระเงิน',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Container(
+                                          width: 300,
+                                          height: 300,
+                                          child: Image.network(
+                                            widget.orderData['receiptUrl'] ??
+                                                'https://via.placeholder.com/150',
+                                            fit: BoxFit.cover,
+                                            width: 300,
+                                            height: 300,
+                                            loadingBuilder:
+                                                (BuildContext context,
+                                                    Widget child,
+                                                    ImageChunkEvent?
+                                                        loadingProgress) {
+                                              if (loadingProgress == null)
+                                                return child;
+                                              return Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  value: loadingProgress
+                                                              .expectedTotalBytes !=
+                                                          null
+                                                      ? loadingProgress
+                                                              .cumulativeBytesLoaded /
+                                                          (loadingProgress
+                                                                  .expectedTotalBytes ??
+                                                              1)
+                                                      : null,
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    Center(
+                                              child: Icon(Icons.broken_image,
+                                                  size: 80, color: Colors.grey),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 40),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          // crossAxisAlignment:/
+                                          // CrossAxisAlignment.center,
+                                          children: [
+                                            Spacer(),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.green,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              onPressed: () {
+                                                // Navigator.pop(context);
+                                                updateOrderProfile('Success');
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text(
+                                                'ยืนยัน',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 20),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              onPressed: () {
+                                                updateOrderProfile('Rejected');
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text(
+                                                'ปฎิเสธ',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                            Spacer(),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                              child: const Text(
+                            'หลักฐานการชำระเงิน',
+                            style: TextStyle(color: Colors.white),
+                          ))),
                   ],
                 ),
               ),

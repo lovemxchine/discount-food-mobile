@@ -302,17 +302,17 @@ class OrderListScreenState extends State<OrderListScreen> {
                                                             color:
                                                                 Colors.orange,
                                                           )),
-                                                      Spacer(),
-                                                      Text(
+                                                      const Spacer(),
+                                                      const Text(
                                                         "รายละเอียดรายการ",
-                                                        style: const TextStyle(
+                                                        style: TextStyle(
                                                           fontSize: 12,
                                                         ),
                                                       ),
                                                       const SizedBox(
                                                         width: 5,
                                                       ),
-                                                      Icon(
+                                                      const Icon(
                                                         Icons.arrow_forward,
                                                         size: 20,
                                                       ),
@@ -324,6 +324,9 @@ class OrderListScreenState extends State<OrderListScreen> {
                                           ),
                                         ),
                                       ),
+                                  Container(
+                                    height: 90,
+                                  )
                                 ],
                               ),
                       ),

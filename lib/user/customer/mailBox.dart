@@ -31,6 +31,16 @@ class _MailBoxPageState extends State<MailBoxPage> {
     return prefs.getString('user_uid');
   }
 
+  String formatDateTime(String isoString) {
+    final dateTime = DateTime.parse(isoString).toLocal();
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final year = dateTime.year.toString();
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    return 'เวลาที่สั่ง: วันที่ $day/$month/$year เวลา $hour.$minute';
+  }
+
   Future<void> _fetchProfile() async {
     String? uid = await getUID();
     var pathAPI = await fetchUrl();
@@ -48,19 +58,50 @@ class _MailBoxPageState extends State<MailBoxPage> {
       print("$pathAPI/customer/profileDetail?uid=$uid");
 
       if (response.statusCode == 200) {
+        if (!mounted) return; // <--- เพิ่มบรรทัดนี้
         setState(() {
           userProfileData = responseData['data'];
           _isLoading = false;
         });
-        print("userProfileData:  $userProfileData");
       } else {
+        if (!mounted) return; // <--- เพิ่มบรรทัดนี้
         setState(() {
           _isLoading = false;
         });
-        // Handle error
       }
     } catch (e) {
       print('Error: $e');
+    }
+  }
+
+  List<dynamic> orderList = [];
+  List<dynamic> originalOrderList = [];
+  String orderStatus = '';
+
+  Future<void> fetchOrders() async {
+    String? uid = await getUID();
+    var pathAPI = await fetchUrl();
+
+    if (uid == null) return;
+
+    final url = Uri.parse("$pathAPI/customer/fetchOrder?uid=$uid");
+    print("$pathAPI/customer/fetchOrder?uid=$uid");
+
+    try {
+      var response = await http.get(url);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        if (!mounted) return; // <--- เพิ่มบรรทัดนี้
+
+        setState(() {
+          originalOrderList = responseData['data'] ?? [];
+          orderList = responseData['data'] ?? [];
+        });
+      } else {
+        // Handle error
+      }
+    } catch (e) {
+      print('Error fetching orders: $e');
     }
   }
 
@@ -68,6 +109,7 @@ class _MailBoxPageState extends State<MailBoxPage> {
   void initState() {
     super.initState();
     _fetchProfile();
+    fetchOrders();
   }
 
   @override
@@ -106,7 +148,6 @@ class _MailBoxPageState extends State<MailBoxPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             userProfileData != null
                                 ? Text(
                                     '${userProfileData!['fname']} ${userProfileData!['lname']}',
@@ -170,21 +211,74 @@ class _MailBoxPageState extends State<MailBoxPage> {
                       padding: EdgeInsets.only(right: 16),
                       child: Align(
                         alignment: Alignment.centerRight,
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Historypage()),
-                            );
-                          },
-                          child: Text(
-                            'ประวัติการสั่งซื้อ',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
+                        child: PopupMenuButton<String>(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                orderStatus == ''
+                                    ? 'เลือกสถานะออเดอร์'
+                                    : orderStatus == 'All'
+                                        ? 'ทั้งหมด'
+                                        : orderStatus == 'Success'
+                                            ? 'ยืนยันการจ่ายเงิน'
+                                            : orderStatus == 'Pending Order'
+                                                ? 'รอการยืนยัน'
+                                                : 'คำสั่งซื้อที่ถูกยกเลิก',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              // Icon(Icons.more_vert, color: Colors.black),
+                            ],
                           ),
+                          onSelected: (value) {
+                            setState(() {
+                              if (value == 'Success') {
+                                orderList = originalOrderList
+                                    .where(
+                                        (order) => order['status'] == 'Success')
+                                    .toList();
+                                orderStatus = 'Success';
+                              } else if (value == 'Pending Order') {
+                                orderList = originalOrderList
+                                    .where((order) =>
+                                        order['status'] == 'Pending Order')
+                                    .toList();
+                                orderStatus = 'Pending Order';
+                                // ติดต่อร้านค้า
+                              } else if (value == 'Rejected') {
+                                orderList = originalOrderList
+                                    .where((order) =>
+                                        order['status'] == 'Rejected')
+                                    .toList();
+                                orderStatus = 'Rejected';
+                                // ยกเลิกออเดอร์
+                              } else if (value == "All") {
+                                orderList = originalOrderList;
+                                orderStatus = 'All';
+                              }
+                            });
+                          },
+                          itemBuilder: (BuildContext context) => [
+                            const PopupMenuItem(
+                              value: 'All',
+                              child: Text('ทั้งหมด'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'Success',
+                              child: Text('ยืนยันการจ่ายเงิน'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'Pending Order',
+                              child: Text('รอการยืนยัน'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'Rejected',
+                              child: Text('คำสั่งซื้อที่ถูกยกเลิก'),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -209,107 +303,132 @@ class _MailBoxPageState extends State<MailBoxPage> {
                         margin: const EdgeInsets.symmetric(horizontal: 10),
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: 2,
+                          itemCount: orderList.length,
                           itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: InkWell(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return _buildMailBoxDetailPopup(
-                                          context, index);
+                            print("orderList:${index} ${orderList[index]}");
+                            return Column(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      top: index == 0 ? 16 : 8, bottom: 8),
+                                  child: InkWell(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return _buildMailBoxDetailPopup(
+                                              context, index);
+                                        },
+                                      );
                                     },
-                                  );
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[300],
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
                                     child: Container(
-                                      padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(8),
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 60,
-                                            height: 60,
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey,
-                                              image: const DecorationImage(
-                                                image: AssetImage(
-                                                    'assets/images/alt.png'),
-                                                fit: BoxFit.cover,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Text(
-                                                  'ข้อความจากทางร้านค้า',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const Text(
-                                                  'Top Market - เซ็นทรัลเวสเกต',
-                                                  style:
-                                                      TextStyle(fontSize: 12),
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
+                                          child: Row(
+                                            children: [
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
-                                                    Text(
-                                                      index == 0
-                                                          ? 'รับสินค้าแล้ว'
-                                                          : 'ยกเลิกสินค้า',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        color: index == 0
-                                                            ? Colors.green
-                                                            : Colors.red,
-                                                      ),
+                                                    const Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          'ออเดอร์ที่สั่งซื้อ',
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          'รายละเอียดสินค้า >',
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors.grey,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    const Text(
-                                                      'รายละเอียดสินค้า',
+                                                    Text(
+                                                      orderList[index]
+                                                              ['shopName'] ??
+                                                          'ร้านค้าไม่ระบุชื่อ',
                                                       style: TextStyle(
-                                                        fontSize: 12,
-                                                        color: Colors.grey,
-                                                      ),
+                                                          fontSize: 12),
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          orderList[index][
+                                                                      'status'] ==
+                                                                  'Success'
+                                                              ? 'ยืนยันการจ่ายเงิน'
+                                                              : orderList[index]
+                                                                          [
+                                                                          'status'] ==
+                                                                      'Pending Order'
+                                                                  ? "รอการยืนยัน"
+                                                                  : "ยกเลิกการสั่งซื้อ",
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: orderList[
+                                                                            index]
+                                                                        [
+                                                                        'status'] ==
+                                                                    'Success'
+                                                                ? Colors.green
+                                                                : orderList[index]
+                                                                            [
+                                                                            'status'] ==
+                                                                        'Pending Order'
+                                                                    ? Colors
+                                                                        .amber
+                                                                    : Colors
+                                                                        .red,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    Text(
+                                                      formatDateTime(
+                                                          orderList[index]
+                                                              ['orderAt']),
+                                                      style: const TextStyle(
+                                                          fontSize: 12),
                                                     ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 5),
-                                                Text(
-                                                  'วันที่ ${index == 0 ? '18' : '22'}/7/2567 เวลา ${index == 0 ? '21:00' : '21:45'} น.',
-                                                  style: const TextStyle(
-                                                      fontSize: 12),
-                                                ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
+                                if (index == orderList.length - 1)
+                                  const SizedBox(height: 100),
+                              ],
                             );
                           },
                         ),

@@ -6,6 +6,7 @@ import 'package:mobile/user/customer/homePage.dart';
 import 'package:mobile/user/customer/mailBox.dart';
 import 'package:mobile/user/customer/favoritePage.dart';
 import 'package:mobile/user/customer/settingsPage.dart';
+
 class MailBoxDetailPage extends StatefulWidget {
   @override
   State<MailBoxDetailPage> createState() => _MailBoxDetailPageState();
@@ -168,7 +169,7 @@ class _MailBoxDetailPageState extends State<MailBoxDetailPage> {
                                         style: TextStyle(fontSize: 14),
                                       ),
                                       Text(
-                                        '092-881-8000',
+                                        '092-881-80v0',
                                         style: TextStyle(fontSize: 14),
                                       ),
                                     ],

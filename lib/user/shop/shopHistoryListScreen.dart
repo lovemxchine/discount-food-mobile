@@ -21,6 +21,8 @@ class HistoryListScreen extends StatefulWidget {
 // TODO: fixed reload realtime data
 class HistoryListScreenState extends State<HistoryListScreen> {
   List<dynamic> listOrder = [];
+  List<dynamic> originalOrderList = [];
+  String orderStatus = '';
   bool isLoading = true;
   MediaType mediaType = MediaType('application', 'json');
   var pathAPI = '';
@@ -82,7 +84,7 @@ class HistoryListScreenState extends State<HistoryListScreen> {
   Future<void> _fetchData() async {
     String? uid = await getUID();
     // print("$pathAPI/shop/${uid}/fetchOrder");
-    final url = Uri.parse("$pathAPI/shop/${uid}/fetchOrder");
+    final url = Uri.parse("$pathAPI/shop/${uid}/getAllOrder");
     var response = await http.get(
       url,
     );
@@ -90,6 +92,7 @@ class HistoryListScreenState extends State<HistoryListScreen> {
 
     setState(() {
       listOrder = responseData['data'] ?? [];
+      originalOrderList = responseData['data'] ?? [];
     });
     // while (responseData['data'].length < 3) {
     //   setState(() {
@@ -194,12 +197,81 @@ class HistoryListScreenState extends State<HistoryListScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'ประวัติการรายการสั่งซื้อ',
+                            'ประวัตออเดอร์',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.grey,
                             ),
+                          ),
+                          PopupMenuButton<String>(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  orderStatus == ''
+                                      ? 'เลือกสถานะออเดอร์'
+                                      : orderStatus == 'All'
+                                          ? 'ทั้งหมด'
+                                          : orderStatus == 'Success'
+                                              ? 'ยืนยันการจ่ายเงิน'
+                                              : orderStatus == 'Pending Order'
+                                                  ? 'กำลังรอยืนยัน'
+                                                  : 'คำสั่งซื้อที่ยกเลิก',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                // Icon(Icons.more_vert, color: Colors.black),
+                              ],
+                            ),
+                            onSelected: (value) {
+                              setState(() {
+                                if (value == 'Success') {
+                                  listOrder = originalOrderList
+                                      .where((order) =>
+                                          order['status'] == 'Success')
+                                      .toList();
+                                  orderStatus = 'Success';
+                                } else if (value == 'Pending Order') {
+                                  listOrder = originalOrderList
+                                      .where((order) =>
+                                          order['status'] == 'Pending Order')
+                                      .toList();
+                                  orderStatus = 'Pending Order';
+                                  // ติดต่อร้านค้า
+                                } else if (value == 'Rejected') {
+                                  listOrder = originalOrderList
+                                      .where((order) =>
+                                          order['status'] == 'Rejected')
+                                      .toList();
+                                  orderStatus = 'Rejected';
+                                  // ยกเลิกออเดอร์
+                                } else if (value == "All") {
+                                  listOrder = originalOrderList;
+                                  orderStatus = 'All';
+                                }
+                              });
+                            },
+                            itemBuilder: (BuildContext context) => [
+                              const PopupMenuItem(
+                                value: 'All',
+                                child: Text('ทั้งหมด'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'Success',
+                                child: Text('ยืนยันการจ่ายเงิน'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'Pending Order',
+                                child: Text('รอการยืนยัน'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'Rejected',
+                                child: Text('คำสั่งซื้อที่ถูกยกเลิก'),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -223,16 +295,24 @@ class HistoryListScreenState extends State<HistoryListScreen> {
                                         child: InkWell(
                                           onTap: () {
                                             print("logging ${listOrder[i]}");
-
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    OrderHistoryDetailScreen(
+                                                    OrderDetailScreen(
                                                   orderData: listOrder[i],
                                                 ),
                                               ),
                                             );
+                                            // Navigator.push(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //     builder: (context) =>
+                                            //         OrderHistoryDetailScreen(
+                                            //       orderData: listOrder[i],
+                                            //     ),
+                                            //   ),
+                                            // );
                                           },
                                           child: Container(
                                             height: 90,

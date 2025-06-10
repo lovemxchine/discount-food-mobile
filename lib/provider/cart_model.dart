@@ -4,8 +4,17 @@ import 'package:flutter/material.dart';
 
 class CartModel extends ChangeNotifier {
   final List<Map<String, dynamic>> _items = [];
+  String? _detail;
 
   List<Map<String, dynamic>> get items => _items;
+
+  String? get detail => _detail; // <-- Getter
+
+  set detail(String? value) {
+    // <-- Setter
+    _detail = value;
+    notifyListeners();
+  }
 
   void add(
     Map<String, dynamic> product,
