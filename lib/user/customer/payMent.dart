@@ -23,6 +23,18 @@ class Payment extends StatefulWidget {
 class _PaymentState extends State<Payment> {
   File? _image;
   final ImagePicker picker = ImagePicker();
+  final Map<String, String> payments = {
+    "qrImg": "loading...",
+    "accountName": "loading...",
+    "bankName": "loading...",
+    "bankNumber": "loading...",
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPaymentData();
+  }
 
   void showPicker(BuildContext context) {
     showModalBottomSheet(
@@ -191,6 +203,32 @@ class _PaymentState extends State<Payment> {
     }
   }
 
+  Future<void> fetchPaymentData() async {
+    String? uid = await getUID();
+    var pathAPI = await fetchUrl();
+    final url = Uri.parse("$pathAPI/shop/getPayment?shopId=${widget.shopId}");
+    print("Fetching payment data from: $url");
+    print("$pathAPI/shop/getPayment?shopId=$widget.shopId");
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final payment = data['data'] ?? {};
+        setState(() {
+          payments['qrImg'] = payment['qrImg'] ?? '';
+          payments['accountName'] = payment['accName'] ?? '';
+          payments['bankName'] = payment['bankName'] ?? '';
+          payments['bankNumber'] = payment['bankNumber'] ?? '';
+        });
+        print(payments);
+      } else {
+        print("Failed to load payment data: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching payment data: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -246,21 +284,38 @@ class _PaymentState extends State<Payment> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: _image != null
-                                  ? Image.file(
-                                      _image!,
-                                      width: double.infinity,
-                                      height: 300,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.asset(
-                                      'assets/images/alt.png',
-                                      width: double.infinity,
-                                      height: 300,
-                                      fit: BoxFit.cover,
-                                    ),
+                            Container(
+                              width: double.infinity,
+                              height: 300,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: (payments['qrImg'] ?? '').isNotEmpty
+                                    ? Image.network(
+                                        payments['qrImg'] ?? "",
+                                        fit: BoxFit.cover,
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Image.asset(
+                                              'assets/images/alt.png');
+                                        },
+                                      )
+                                    : Container(
+                                        width: double.infinity,
+                                        height: 300,
+                                        color: Colors.grey[300],
+                                        alignment: Alignment.center,
+                                        child: Icon(Icons.image,
+                                            size: 64, color: Colors.grey),
+                                      ),
+                              ),
                             ),
                             SizedBox(height: 16),
                             Row(
@@ -291,7 +346,7 @@ class _PaymentState extends State<Payment> {
                                           ),
                                         ),
                                         Text(
-                                          "Tops market",
+                                          payments['accountName'] ?? '',
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.normal,
@@ -323,7 +378,7 @@ class _PaymentState extends State<Payment> {
                                           ),
                                         ),
                                         Text(
-                                          "ธนาคารกสิกรไทย",
+                                          payments['bankName'] ?? '',
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.normal,
@@ -355,7 +410,7 @@ class _PaymentState extends State<Payment> {
                                           ),
                                         ),
                                         Text(
-                                          "xxx-x-x1041-x",
+                                          payments['bankNumber'] ?? '',
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.normal,
@@ -414,6 +469,125 @@ class _PaymentState extends State<Payment> {
                                             ),
                                           ),
                                         ),
+                                        SizedBox(height: 8),
+                                        if (_image != null)
+                                          TextButton.icon(
+                                            onPressed: () {
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return Container(
+                                                    width: double.infinity,
+                                                    height: 400,
+                                                    child: Dialog(
+                                                      child: GestureDetector(
+                                                        onTap: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child: Container(
+                                                          width:
+                                                              double.infinity,
+                                                          height: 400,
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8),
+                                                          child: _image != null
+                                                              ? Column(
+                                                                  children: [
+                                                                    Text(
+                                                                      "สลีปการจ่ายเงิน",
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            18,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(
+                                                                      height:
+                                                                          16,
+                                                                    ),
+                                                                    ClipRRect(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              8),
+                                                                      child: Image
+                                                                          .file(
+                                                                        _image!,
+                                                                        fit: BoxFit
+                                                                            .contain,
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(
+                                                                      height:
+                                                                          16,
+                                                                    ),
+                                                                    DecoratedBox(
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        color: Color.fromARGB(
+                                                                            255,
+                                                                            117,
+                                                                            117,
+                                                                            117),
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(4),
+                                                                      ),
+                                                                      child:
+                                                                          GestureDetector(
+                                                                        onTap:
+                                                                            () {
+                                                                          Navigator.of(context)
+                                                                              .pop();
+                                                                        },
+                                                                        child:
+                                                                            Padding(
+                                                                          padding: const EdgeInsets
+                                                                              .symmetric(
+                                                                              horizontal: 16,
+                                                                              vertical: 8),
+                                                                          child:
+                                                                              Text(
+                                                                            "ปิด",
+                                                                            style:
+                                                                                TextStyle(color: Colors.white),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                )
+                                                              : const SizedBox
+                                                                  .shrink(),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            icon: Icon(
+                                              Icons.file_upload_outlined,
+                                              color: Colors.white,
+                                            ),
+                                            label: Text(
+                                              "ดูหลักฐานการจ่ายเงิน",
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                            style: TextButton.styleFrom(
+                                              backgroundColor: Colors.blue,
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 12),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
+                                              ),
+                                            ),
+                                          ),
                                       ],
                                     ),
                                   ],
