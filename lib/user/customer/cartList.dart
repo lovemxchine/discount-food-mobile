@@ -240,12 +240,17 @@ class _CartlistState extends State<Cartlist> {
                                             left: 16,
                                           ),
                                           child: TextField(
+                                            onChanged: (value) {
+                                              Provider.of<CartModel>(context,
+                                                      listen: false)
+                                                  .detail = value;
+                                            },
                                             minLines: 3,
                                             maxLines: 5,
                                             decoration: InputDecoration(
                                               filled: true,
                                               fillColor: Colors.white,
-                                              hintText: "เช่น แขวนไว้หน้าบ้าน",
+                                              hintText: "เช่น ไปรับอีก 5 นาที",
                                               hintStyle: const TextStyle(
                                                   color: Colors.grey),
                                               border: OutlineInputBorder(

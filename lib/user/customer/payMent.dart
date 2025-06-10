@@ -165,6 +165,7 @@ class _PaymentState extends State<Payment> {
       request.fields['shopUid'] = widget.shopId;
       request.fields['list'] = jsonEncode(cartData.items);
       request.fields['total'] = cartData.total.toString();
+      request.fields['detail'] = cartData.detail ?? '';
       if (_image != null) {
         request.files
             .add(await http.MultipartFile.fromPath('image', _image!.path));

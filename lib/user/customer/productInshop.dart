@@ -36,6 +36,9 @@ class _ProductInShopState extends State<ProductInShop> {
   Future<void> initFetch() async {
     await fetchUrl();
     await fetchProduct();
+    setState(() {
+      Provider.of<CartModel>(context, listen: false).clear();
+    });
   }
 
   Future<void> fetchUrl() async {
