@@ -187,7 +187,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       if (response.statusCode == 200) {
         print("API response: ${response.body}");
         final responseData = jsonDecode(response.body);
-
       } else {
         print("Failed to load data: ${response.statusCode}");
         // Handle the error accordingly
@@ -206,46 +205,28 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       },
       child: Column(
         children: [
-          const Row(children: [
-            Icon(Icons.person_rounded, size: 18),
-            SizedBox(width: 5),
-            Text("รายละเอียดโปรไฟล์",
-                style: TextStyle(
-                  decoration: TextDecoration.underline,
-                  fontSize: 16,
-                ))
-          ]),
-          SizedBox(height: 9),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: InkWell(
-                onTap: () {
-                  widget.settingIsDetail();
-                },
-                child: Container(
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black, // Underline color
-                          width: 1, // Underline thickness
-                        ),
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: const Row(children: [
-                      Text(
-                        "ข้อมูลบัญชี",
-                        style: TextStyle(
-                          fontSize: 14,
-                        ),
-                      ),
-                      Spacer(),
-                      Icon(
-                        Icons.edit,
-                        size: 16,
-                      )
-                    ]))),
+          InkWell(
+            
+            onTap: () {
+              widget.settingIsDetail(); 
+            },
+            child: const Row(
+              children: [
+                Icon(Icons.person_rounded, size: 18),
+                SizedBox(width: 5),
+                Text(
+                  "รายละเอียดโปรไฟล์",
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
           ),
+          
+
+          SizedBox(height: 9),
           Padding(
             padding: EdgeInsets.all(8.0),
             child: InkWell(
