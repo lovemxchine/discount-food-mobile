@@ -148,6 +148,52 @@ class _Profile extends State<Profile> {
     }
   }
 
+  Future<bool> updateCustomer() async {
+  String name = fnameController.text.trim();
+  String surname = lnameController.text.trim();
+  String tel = telController.text.trim();
+  
+  try {
+    String? uid = await getUID();
+    if (uid == null) {
+      print("ERROR: UID is null");
+      return false;
+    }
+    
+
+    final url = Uri.parse("$pathAPI/customer/updateCustomer?uid=$uid");
+    print("DEBUG: Calling URL: $url");
+    print("DEBUG: UID: $uid");
+    print("DEBUG: Data: fname=$name, lname=$surname, tel=$tel");
+    
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'fname': name,
+        'lname': surname,
+        'tel': tel,
+      }),
+    );
+    
+    print("DEBUG: Response status: ${response.statusCode}");
+    print("DEBUG: Response body: ${response.body}");
+    
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['status'] == 'success';
+    } else {
+      print("ERROR: Server returned ${response.statusCode}: ${response.body}");
+      return false;
+    }
+  } catch (e) {
+    print('ERROR: Exception occurred: $e');
+    return false;
+  }
+}
+
+  
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -209,44 +255,122 @@ class _Profile extends State<Profile> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 10),
                                   Text("ชื่อ"),
                                   SizedBox(height: 5),
                                   Container(
-                                    height: 20,
+                                    height: 50,
                                     child: TextField(
                                       controller: fnameController,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 10),
+                                      ),
                                     ),
                                   ),
                                   SizedBox(height: 10),
                                   Text("นามสกุล"),
                                   SizedBox(height: 5),
                                   Container(
-                                    height: 20,
+                                    height: 50,
                                     child: TextField(
                                       controller: lnameController,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 10),
+                                      ),
                                     ),
                                   ),
                                   SizedBox(height: 10),
                                   Text("อีเมล"),
                                   SizedBox(height: 5),
                                   Container(
-                                    height: 20,
+                                    height: 50,
                                     child: TextField(
                                       controller: emailController,
-                                       readOnly: true,
+                                      readOnly: true,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 10),
+                                        fillColor: Colors.grey[200],
+                                        filled: true,
+                                      ),
                                     ),
                                   ),
                                   SizedBox(height: 10),
                                   Text("เบอร์"),
                                   SizedBox(height: 5),
                                   Container(
-                                    height: 20,
+                                    height: 50,
                                     child: TextField(
                                       controller: telController,
+                                      keyboardType: TextInputType.phone,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 10),
+                                      ),
                                     ),
                                   ),
-                                  SizedBox(height: 10),
+                                  SizedBox(height: 20),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 15),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      onPressed: () async {
+                                        showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (BuildContext context) {
+                                            return Center(
+                                                child:
+                                                    CircularProgressIndicator());
+                                          },
+                                        );
+
+                                        bool success = await updateCustomer();
+
+                                        Navigator.of(context).pop();
+
+                                        if (success) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content:
+                                                  Text('ข้อมูลอัพเดตสำเร็จ!'),
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          );
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  'อัพเดตข้อมูลไม่สำเร็จ. กรุณาลองอีกครั้ง.'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: Text(
+                                        'อัพเดตข้อมูล',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
                                 ])),
                       );
                     },
