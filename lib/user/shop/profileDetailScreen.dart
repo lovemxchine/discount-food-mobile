@@ -154,6 +154,33 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     return prefs.getString('user_uid');
   }
 
+  Future<void> updateTimeSet() async {
+    String openAt = openAtController.text.trim();
+    String closeAt = closeAtController.text.trim();
+    String? uid = await getUID();
+    final url = Uri.parse("$pathAPI/shop/updateTimeSet?uid=$uid");
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "openAt": openAt,
+          "closeAt": closeAt,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print("Success: ${jsonDecode(response.body)['message']}");
+      } else {
+        print(" Failed: ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
   Future<void> _fetchData() async {
     print("before fetch");
     String? uid = await getUID();
@@ -288,28 +315,30 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     barrierDismissible: false,
                     builder: (BuildContext context) {
                       return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        child: Container(
-                            width: 500, // Set custom width
-                            height: 600, // Set custom height
-                            padding: EdgeInsets.all(
-                                16), // Add padding inside the container
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          child: Container(
+                            width: 500,
+                            constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * 0.8,
+                            ),
+                            padding: EdgeInsets.all(16),
+                            child: SingleChildScrollView(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
                                   Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Icon(Icons.close,
-                                              color: Colors.grey[600]),
-                                        ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Icon(Icons.close,
+                                            color: Colors.grey[600]),
                                       ),
                                     ],
                                   ),
@@ -430,142 +459,142 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       child: ElevatedButton(
                                         onPressed: () async {
                                           showDialog(
-                                              context: context,
-                                              barrierDismissible: false,
-                                              builder: (BuildContext context) {
-                                                return Dialog(
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              15.0),
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (BuildContext context) {
+                                              return Dialog(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          15.0),
+                                                ),
+                                                child: Container(
+                                                  width: 600,
+                                                  constraints: BoxConstraints(
+                                                    maxHeight: MediaQuery.of(
+                                                                context)
+                                                            .size
+                                                            .height *
+                                                        0.85, // ป้องกันล้นจอ
+                                                  ),
+                                                  padding: EdgeInsets.all(16),
+                                                  child: SingleChildScrollView(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: <Widget>[
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                              child: Icon(
+                                                                  Icons.close,
+                                                                  color: Colors
+                                                                          .grey[
+                                                                      600]),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Container(
+                                                          width:
+                                                              double.infinity,
+                                                          height: 200,
+                                                          child: shopImgUrlController
+                                                                  .text
+                                                                  .isNotEmpty
+                                                              ? Image.network(
+                                                                  shopImgUrlController
+                                                                      .text
+                                                                      .trim(),
+                                                                  errorBuilder: (context,
+                                                                          error,
+                                                                          stackTrace) =>
+                                                                      Center(
+                                                                          child:
+                                                                              Text("Failed to load image")),
+                                                                )
+                                                              : const Text(
+                                                                  "No image available"),
+                                                        ),
+                                                        SizedBox(height: 10),
+                                                        CustomImageUploadButton(
+                                                          label:
+                                                              'รูปหน้าปกร้าน',
+                                                          onPressed: () {
+                                                            showPicker(context);
+                                                          },
+                                                        ),
+                                                        SizedBox(height: 10),
+                                                        Container(
+                                                          width:
+                                                              double.infinity,
+                                                          height: 200,
+                                                          child: shopImgCoverUrlController
+                                                                  .text
+                                                                  .isNotEmpty
+                                                              ? Image.network(
+                                                                  shopImgCoverUrlController
+                                                                      .text
+                                                                      .trim(),
+                                                                  errorBuilder: (context,
+                                                                          error,
+                                                                          stackTrace) =>
+                                                                      Center(
+                                                                          child:
+                                                                              Text("Failed to load image")),
+                                                                )
+                                                              : const Text(
+                                                                  "No image available"),
+                                                        ),
+                                                        SizedBox(height: 10),
+                                                        CustomImageUploadButton(
+                                                          label:
+                                                              'รูปหน้าปกพื้นหลังร้าน',
+                                                          onPressed: () {
+                                                            showPicker(context);
+                                                          },
+                                                        ),
+                                                        SizedBox(height: 10),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Colors.blue,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8),
+                                                            ),
+                                                          ),
+                                                          onPressed: () {
+                                                            // updateProfile();
+                                                          },
+                                                          child: Center(
+                                                            child: Text(
+                                                              'ยืนยันการแก้ไข',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    child: Container(
-                                                      width:
-                                                          600, // Set custom width
-                                                      height:
-                                                          800, // Set custom height
-                                                      padding: EdgeInsets.all(
-                                                          16), // Add padding inside the container
-                                                      child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: <Widget>[
-                                                            Row(
-                                                              children: [
-                                                                Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .topLeft,
-                                                                  child:
-                                                                      TextButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator.of(
-                                                                              context)
-                                                                          .pop();
-                                                                    },
-                                                                    child: Icon(
-                                                                        Icons
-                                                                            .close,
-                                                                        color: Colors
-                                                                            .grey[600]),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Container(
-                                                              width: double
-                                                                  .infinity,
-                                                              height: 200,
-                                                              child: shopImgUrlController
-                                                                      .text
-                                                                      .isNotEmpty
-                                                                  ? Image
-                                                                      .network(
-                                                                      shopImgUrlController
-                                                                          .text
-                                                                          .trim(),
-                                                                      errorBuilder: (context,
-                                                                              error,
-                                                                              stackTrace) =>
-                                                                          Center(
-                                                                              child: Text("Failed to load image")),
-                                                                    )
-                                                                  : const Text(
-                                                                      "No image available"),
-                                                            ),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            CustomImageUploadButton(
-                                                                label:
-                                                                    'รูปหน้าปกร้าน',
-                                                                onPressed: () {
-                                                                  showPicker(
-                                                                    context,
-                                                                  );
-                                                                }),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            Container(
-                                                              width: double
-                                                                  .infinity,
-                                                              height: 200,
-                                                              child: shopImgCoverUrlController
-                                                                      .text
-                                                                      .isNotEmpty
-                                                                  ? Image
-                                                                      .network(
-                                                                      shopImgCoverUrlController
-                                                                          .text
-                                                                          .trim(),
-                                                                      errorBuilder: (context,
-                                                                              error,
-                                                                              stackTrace) =>
-                                                                          Center(
-                                                                              child: Text("Failed to load image")),
-                                                                    )
-                                                                  : const Text(
-                                                                      "No image available"),
-                                                            ),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            CustomImageUploadButton(
-                                                                label:
-                                                                    'รูปหน้าปกพื้นหลังร้าน',
-                                                                onPressed: () {
-                                                                  showPicker(
-                                                                    context,
-                                                                  );
-                                                                }),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            ElevatedButton(
-                                                                style: ElevatedButton
-                                                                    .styleFrom(
-                                                                        backgroundColor:
-                                                                            Colors
-                                                                                .blue,
-                                                                        shape:
-                                                                            RoundedRectangleBorder(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(8),
-                                                                        )),
-                                                                onPressed: () {
-                                                                  // updateProfile();
-                                                                },
-                                                                child: Container(
-                                                                    child: Center(
-                                                                        child: Text(
-                                                                  'ยืนยันการแก้ไข',
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .white),
-                                                                )))),
-                                                          ]),
-                                                    ));
-                                              });
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
                                         },
                                         style: ElevatedButton.styleFrom(
                                           side: const BorderSide(
@@ -628,237 +657,236 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                                               15.0),
                                                     ),
                                                     child: Container(
-                                                      width:
-                                                          600, // Set custom width
-                                                      height:
-                                                          800, // Set custom height
-                                                      padding: EdgeInsets.all(
-                                                          16), // Add padding inside the container
-                                                      child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: <Widget>[
-                                                            Row(
-                                                              children: [
-                                                                Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .topLeft,
-                                                                  child:
-                                                                      TextButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator.of(
-                                                                              context)
-                                                                          .pop();
-                                                                    },
-                                                                    child: Icon(
-                                                                        Icons
-                                                                            .close,
-                                                                        color: Colors
-                                                                            .grey[600]),
+                                                        width: 600,
+                                                        constraints:
+                                                            BoxConstraints(
+                                                          maxHeight:
+                                                              MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .height *
+                                                                  0.85,
+                                                        ),
+                                                        padding: EdgeInsets.all(
+                                                            16), // Add padding inside the container
+                                                        child:
+                                                            SingleChildScrollView(
+                                                          child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: <Widget>[
+                                                                Row(
+                                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                                  children: [
+                                                                    Align(
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .topLeft,
+                                                                      child:
+                                                                          TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          Navigator.of(context)
+                                                                              .pop();
+                                                                        },
+                                                                        child: Icon(
+                                                                            Icons
+                                                                                .close,
+                                                                            color:
+                                                                                Colors.grey[600]),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Container(
+                                                                  width: double
+                                                                      .infinity,
+                                                                  height: 200,
+                                                                  child: qrImgController
+                                                                          .text
+                                                                          .isNotEmpty
+                                                                      ? Image
+                                                                          .network(
+                                                                          qrImgController
+                                                                              .text
+                                                                              .trim(),
+                                                                          errorBuilder: (context, error, stackTrace) =>
+                                                                              Center(child: Text("Failed to load image")),
+                                                                        )
+                                                                      : const Text(
+                                                                          "No image available"),
+                                                                ),
+                                                                SizedBox(
+                                                                    height: 10),
+                                                                Center(
+                                                                  child: Row(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .center,
+                                                                    children: [
+                                                                      SizedBox(
+                                                                        width:
+                                                                            80,
+                                                                        child:
+                                                                            Text(
+                                                                          "ชื่อบัญชี :",
+                                                                          style:
+                                                                              TextStyle(fontWeight: FontWeight.bold),
+                                                                        ),
+                                                                      ),
+                                                                      SizedBox(
+                                                                        width:
+                                                                            150,
+                                                                        child:
+                                                                            TextField(
+                                                                          controller:
+                                                                              accNameController,
+                                                                          decoration:
+                                                                              InputDecoration(
+                                                                            isDense:
+                                                                                true,
+                                                                            contentPadding:
+                                                                                EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                                                            border:
+                                                                                OutlineInputBorder(),
+                                                                          ),
+                                                                          style:
+                                                                              TextStyle(fontSize: 16),
+                                                                        ),
+                                                                      ),
+                                                                    ],
                                                                   ),
                                                                 ),
-                                                              ],
-                                                            ),
-                                                            Container(
-                                                              width: double
-                                                                  .infinity,
-                                                              height: 200,
-                                                              child: qrImgController
-                                                                      .text
-                                                                      .isNotEmpty
-                                                                  ? Image
-                                                                      .network(
-                                                                      qrImgController
-                                                                          .text
-                                                                          .trim(),
-                                                                      errorBuilder: (context,
-                                                                              error,
-                                                                              stackTrace) =>
-                                                                          Center(
-                                                                              child: Text("Failed to load image")),
-                                                                    )
-                                                                  : const Text(
-                                                                      "No image available"),
-                                                            ),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            Center(
-                                                              child: Row(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .min,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  SizedBox(
-                                                                    width: 80,
-                                                                    child: Text(
-                                                                      "ชื่อบัญชี :",
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold),
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(
-                                                                    width: 150,
-                                                                    child:
-                                                                        TextField(
-                                                                      controller:
-                                                                          accNameController,
-                                                                      decoration:
-                                                                          InputDecoration(
-                                                                        isDense:
-                                                                            true,
-                                                                        contentPadding: EdgeInsets.symmetric(
-                                                                            vertical:
-                                                                                8,
-                                                                            horizontal:
-                                                                                8),
-                                                                        border:
-                                                                            OutlineInputBorder(),
+                                                                SizedBox(
+                                                                    height: 10),
+                                                                Center(
+                                                                  child: Row(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .center,
+                                                                    children: [
+                                                                      SizedBox(
+                                                                        width:
+                                                                            80,
+                                                                        child:
+                                                                            Text(
+                                                                          "บัญชี :",
+                                                                          style:
+                                                                              TextStyle(fontWeight: FontWeight.bold),
+                                                                        ),
                                                                       ),
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              16),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            Center(
-                                                              child: Row(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .min,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  SizedBox(
-                                                                    width: 80,
-                                                                    child: Text(
-                                                                      "บัญชี :",
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold),
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(
-                                                                    width: 150,
-                                                                    child:
-                                                                        TextField(
-                                                                      controller:
-                                                                          bankNameController,
-                                                                      decoration:
-                                                                          InputDecoration(
-                                                                        isDense:
-                                                                            true,
-                                                                        contentPadding: EdgeInsets.symmetric(
-                                                                            vertical:
-                                                                                8,
-                                                                            horizontal:
-                                                                                8),
-                                                                        border:
-                                                                            OutlineInputBorder(),
+                                                                      SizedBox(
+                                                                        width:
+                                                                            150,
+                                                                        child:
+                                                                            TextField(
+                                                                          controller:
+                                                                              bankNameController,
+                                                                          decoration:
+                                                                              InputDecoration(
+                                                                            isDense:
+                                                                                true,
+                                                                            contentPadding:
+                                                                                EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                                                            border:
+                                                                                OutlineInputBorder(),
+                                                                          ),
+                                                                          style:
+                                                                              TextStyle(fontSize: 16),
+                                                                        ),
                                                                       ),
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              16),
-                                                                    ),
+                                                                    ],
                                                                   ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            Center(
-                                                              child: Row(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .min,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  SizedBox(
-                                                                    width: 80,
-                                                                    child: Text(
-                                                                      "เลขบัญชี :",
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold),
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(
-                                                                    width: 150,
-                                                                    child:
-                                                                        TextField(
-                                                                      controller:
-                                                                          bankNumberController,
-                                                                      decoration:
-                                                                          InputDecoration(
-                                                                        isDense:
-                                                                            true,
-                                                                        contentPadding: EdgeInsets.symmetric(
-                                                                            vertical:
-                                                                                8,
-                                                                            horizontal:
-                                                                                8),
-                                                                        border:
-                                                                            OutlineInputBorder(),
+                                                                ),
+                                                                SizedBox(
+                                                                    height: 10),
+                                                                Center(
+                                                                  child: Row(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .center,
+                                                                    children: [
+                                                                      SizedBox(
+                                                                        width:
+                                                                            80,
+                                                                        child:
+                                                                            Text(
+                                                                          "เลขบัญชี :",
+                                                                          style:
+                                                                              TextStyle(fontWeight: FontWeight.bold),
+                                                                        ),
                                                                       ),
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              16),
-                                                                    ),
+                                                                      SizedBox(
+                                                                        width:
+                                                                            150,
+                                                                        child:
+                                                                            TextField(
+                                                                          controller:
+                                                                              bankNumberController,
+                                                                          decoration:
+                                                                              InputDecoration(
+                                                                            isDense:
+                                                                                true,
+                                                                            contentPadding:
+                                                                                EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                                                            border:
+                                                                                OutlineInputBorder(),
+                                                                          ),
+                                                                          style:
+                                                                              TextStyle(fontSize: 16),
+                                                                        ),
+                                                                      ),
+                                                                    ],
                                                                   ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            CustomImageUploadButton(
-                                                                label:
-                                                                    'QR code',
-                                                                onPressed: () {
-                                                                  showPicker(
-                                                                    context,
-                                                                  );
-                                                                }),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            SizedBox(
-                                                                height: 10),
-                                                            ElevatedButton(
-                                                                style: ElevatedButton
-                                                                    .styleFrom(
-                                                                        backgroundColor:
-                                                                            Colors
+                                                                ),
+                                                                SizedBox(
+                                                                    height: 10),
+                                                                CustomImageUploadButton(
+                                                                    label:
+                                                                        'QR code',
+                                                                    onPressed:
+                                                                        () {
+                                                                      showPicker(
+                                                                        context,
+                                                                      );
+                                                                    }),
+                                                                SizedBox(
+                                                                    height: 10),
+                                                                SizedBox(
+                                                                    height: 10),
+                                                                ElevatedButton(
+                                                                    style: ElevatedButton
+                                                                        .styleFrom(
+                                                                            backgroundColor: Colors
                                                                                 .blue,
-                                                                        shape:
-                                                                            RoundedRectangleBorder(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(8),
-                                                                        )),
-                                                                onPressed: () {
-                                                                  // updateProfile();
-                                                                },
-                                                                child: Container(
-                                                                    child: Center(
-                                                                        child: Text(
-                                                                  'ยืนยันการแก้ไข',
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .white),
-                                                                )))),
-                                                          ]),
-                                                    ));
+                                                                            shape:
+                                                                                RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius.circular(8),
+                                                                            )),
+                                                                    onPressed:
+                                                                        () {
+                                                                      // updateProfile();
+                                                                    },
+                                                                    child: Container(
+                                                                        child: Center(
+                                                                            child: Text(
+                                                                      'ยืนยันการแก้ไข',
+                                                                      style: TextStyle(
+                                                                          color:
+                                                                              Colors.white),
+                                                                    )))),
+                                                              ]),
+                                                        )));
                                               });
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -902,7 +930,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                     ),
                                   ),
                                 ])),
-                      );
+                          ));
                     },
                   );
                 },
@@ -929,7 +957,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       size: 16,
                     )
                   ]),
-                )),
+                )
+                ),
           ),
         ],
       ),
