@@ -51,9 +51,14 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
       TextEditingController();
   final TextEditingController telShopkeeperController = TextEditingController();
 
+  final TextEditingController accNameController = TextEditingController();
+  final TextEditingController bankNumberController = TextEditingController();
+  final TextEditingController bankNameController = TextEditingController();
+
   File? ShopCoverImg;
   File? ShopImg;
   File? CertificateImg;
+  File? paymentImage;
 
   bool regisLoading = false;
 
@@ -70,6 +75,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
   bool secondPageValidate = false;
   bool thirdPageValidate = false;
   bool fourthPageValidate = false;
+  bool finalPageValidate = false;
 
   int currentPage = 0;
   bool pinMap = false;
@@ -148,6 +154,10 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
         districtToSubDistricts[selectedUserDistrict]!.first;
 
     postcodeShopkeeperController.addListener(checkFields);
+    accNameController.addListener(checkFields);
+    bankNumberController.addListener(checkFields);
+    bankNameController.addListener(checkFields);
+
     if (provinceToDistricts.isNotEmpty) {
       selectedProvince = provinceToDistricts.keys.first;
       if (provinceToDistricts[selectedProvince]!.isNotEmpty) {
@@ -186,6 +196,9 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
           nationalityShopkeeperController.text.isNotEmpty &&
           placeShopkeeperController.text.isNotEmpty &&
           postcodeShopkeeperController.text.isNotEmpty;
+      finalPageValidate = accNameController.text.isNotEmpty &&
+          bankNumberController.text.isNotEmpty &&
+          bankNameController.text.isNotEmpty;
     });
   }
 
@@ -419,6 +432,58 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     }
   }
 
+  void showPicker4(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Photo Library'),
+                onTap: () {
+                  getImage4();
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Camera'),
+                onTap: () {
+                  openCamera(context);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future getImage4() async {
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      setState(() {
+        if (pickedFile != null) {
+          paymentImage = File(pickedFile.path);
+        }
+      });
+    } on Exception catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> openCamera4(BuildContext context) async {
+    final XFile? image = await picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      // Handle the captured image
+      print('Image path: ${image.path}');
+    }
+  }
+
   @override
   void dispose() {
     emailController.dispose();
@@ -538,8 +603,24 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
         request.fields['openAt'] = formatTimeOfDay2(openTime);
         request.fields['closeAt'] = formatTimeOfDay2(closeTime);
 
-        // Add image files
+        request.fields['shopkeeperData[tel]'] =
+            telShopkeeperController.text ?? '';
+
+        // Add payment info
+        request.fields['payment[bankName]'] = bankNameController.text ?? '';
+        request.fields['payment[accName]'] = accNameController.text ?? '';
+        request.fields['payment[bankNumber]'] = bankNumberController.text ?? '';
         List<http.MultipartFile> imageFiles = [];
+
+        // Add payment image
+        if (paymentImage != null) {
+          imageFiles.add(await http.MultipartFile.fromPath(
+            'images',
+            paymentImage!.path,
+          ));
+        }
+
+        // Add image files
 
         if (ShopCoverImg != null) {
           imageFiles.add(await http.MultipartFile.fromPath(
@@ -586,7 +667,6 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
         regisLoading = false;
       });
       _auth.handleFirebaseAuthError(e);
-      print(e.message);
     }
   }
 
@@ -1305,7 +1385,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                                 width: 280,
                                 child: ElevatedButton(
                                   onPressed:
-                                      fourthPageValidate ? signUpFunc : null,
+                                      fourthPageValidate ? nextPage : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: fourthPageValidate
                                         ? Colors.blue
@@ -1337,6 +1417,116 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                     ),
                   ),
                 ),
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 40, right: 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        const Text(
+                          'เพิ่มข้อมูลสำหรับธุรกรรม',
+                          style: TextStyle(
+                            fontSize: 24,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: buildUnderlineTextField(
+                                accNameController,
+                                'ชื่อบัญชี',
+                                'ชื่อบัญชีธนาคาร',
+                                false,
+                                false,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: buildUnderlineTextField(
+                                bankNumberController,
+                                'เลขที่บัญชี',
+                                'เลขที่บัญชี',
+                                false,
+                                false,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        buildUnderlineTextField(
+                          bankNameController,
+                          'ธนาคาร',
+                          'ชื่อธนาคาร',
+                          false,
+                          false,
+                        ),
+                        const SizedBox(height: 16),
+                        if (paymentImage != null)
+                          Center(
+                            child: Image.file(
+                              paymentImage!,
+                              width: 300,
+                              height: 250,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        else
+                          Center(
+                            child: Image.asset('assets/images/alt.png',
+                                width: 300, height: 250, fit: BoxFit.cover),
+                          ),
+                        const SizedBox(height: 16),
+                        CustomImageUploadButton(
+                          label: 'อัปโหลดรูปหน้าสมุดบัญชี',
+                          onPressed: () {
+                            // เพิ่มฟังก์ชันเลือกรูปภาพสมุดบัญชีที่นี่
+                            showPicker4(context);
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'กรุณาตรวจสอบข้อมูลของคุณให้ถูกต้องก่อนดำเนินการต่อ',
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: SizedBox(
+                            width: 280,
+                            child: ElevatedButton(
+                              onPressed:
+                                  finalPageValidate && paymentImage != null
+                                      ? signUpFunc
+                                      : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    finalPageValidate && paymentImage != null
+                                        ? Colors.blue
+                                        : Colors.grey,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
+                              child: finalPageValidate && paymentImage != null
+                                  ? const Text(
+                                      'ยืนยันการลงทะเบียน',
+                                      style: TextStyle(color: Colors.white),
+                                    )
+                                  : const Text(
+                                      'กรุณากรอกข้อมูลให้ครบ',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               ],
             ),
           ),
