@@ -34,7 +34,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   File? _imageGemini;
   var pathAPI = "";
   var uid = '';
-
+  bool isLoadingGemini = false;
   Future<void> addProductFunc() async {
     await fetchUrl();
     await addProduct();
@@ -189,7 +189,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       return;
     }
-
+    setState(() {
+      isLoadingGemini = true;
+    });
     var url = Uri.parse(pathAPI + '/gemini/OCR');
     var request = http.MultipartRequest('POST', url);
     request.files
@@ -219,6 +221,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
       }
     } on Exception catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        isLoadingGemini = false;
+      });
     }
   }
 
@@ -303,229 +309,222 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: const Color.fromARGB(255, 224, 217, 217),
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(50),
-          child: AppBar(
-            backgroundColor: const Color.fromARGB(255, 224, 217, 217),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
-                Navigator.pop(context); // Navigate back to the previous screen
-              },
-            ),
+      resizeToAvoidBottomInset: false,
+      backgroundColor: const Color.fromARGB(255, 224, 217, 217),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50),
+        child: AppBar(
+          backgroundColor: const Color.fromARGB(255, 224, 217, 217),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context); // Navigate back to the previous screen
+            },
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20),
-          child: Column(
-            children: [
-              Container(
-                height: 600,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: const Color.fromARGB(255, 219, 219, 219),
-                  border: Border.all(
-                    color: const Color.fromARGB(
-                        255, 175, 175, 175), // Set the border color here
-                    width: 1.0, // Set the border width here
+      ),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            child: Column(
+              children: [
+                Container(
+                  height: 600,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: const Color.fromARGB(255, 219, 219, 219),
+                    border: Border.all(
+                      color: const Color.fromARGB(
+                          255, 175, 175, 175), // Set the border color here
+                      width: 1.0, // Set the border width here
+                    ),
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      if (_image != null)
-                        Container(
-                          height: 200,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            color: Colors.grey[200],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(5),
-                            child: Image.file(
-                              _image!,
-                              fit: BoxFit.contain,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        if (_image != null)
+                          Container(
+                            height: 200,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.grey[200],
                             ),
-                          ),
-                        )
-                      else
-                        Container(
-                          height: 200,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.grey[200],
-                            image: const DecorationImage(
-                              image: AssetImage('assets/images/alt.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      // Container(
-                      //   height: 200,
-                      //   width: double.infinity,
-                      //   decoration: BoxDecoration(
-                      //     borderRadius: BorderRadius.circular(8),
-                      //     color: Colors.white,
-                      //     border: Border.all(
-                      //       color: Colors.grey, // Set the border color here
-                      //       width: 1.0, // Set the border width here
-                      //     ),
-                      //     image: DecorationImage(
-                      //       image: _image != null && _image!.existsSync()
-                      //           ? FileImage(_image!)
-                      //           : const AssetImage('assets/images/alt.png')
-                      //               as ImageProvider<Object>,
-                      //       fit: BoxFit.cover,
-                      //     ),
-                      //   ),
-                      // ),
-                      const SizedBox(height: 10),
-                      GestureDetector(
-                        onTap: () => showPicker(context),
-                        child: Container(
-                          height: 55,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            color: Colors.white,
-                          ),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  height: 55,
-                                  width: 60,
-                                  decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(5),
-                                      bottomLeft: Radius.circular(5),
-                                    ),
-                                    color: Colors.grey,
-                                  ),
-                                  child: const Icon(Icons.camera_alt),
-                                ),
-                                const Text('เลือกรูปภาพสินค้า'),
-                                Container(
-                                  height: 55,
-                                  width: 60,
-                                )
-                              ]),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      buildUnderlineTextField(nameController, 'ชื่อสินค้า',
-                          'กรอกชื่อสินค้า', false, false),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: buildUnderlineTextField(originalPrice,
-                                'ราคาดั้งเดิม', 'ราคาดั้งเดิม', false, false),
-                          ),
-                          const SizedBox(width: 60),
-                          Expanded(
-                            child: buildUnderlineTextField(
-                                salePrice, 'ราคาขาย', 'ราคาขาย', false, false),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 190),
-                        child: buildUnderlineTextField(
-                            stock, 'จำนวนสินค้า', 'จำนวนสินค้า', false, false),
-                      ),
-                      const SizedBox(height: 10),
-                      customDateField(expiredDate, context, 'วันหมดอายุ', 18),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              showPickerGemini(context);
-                            },
-                            child: Container(
-                              height: 40,
-                              width: 180,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: Colors.white,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              child: Image.file(
+                                _image!,
+                                fit: BoxFit.contain,
                               ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                            ),
+                          )
+                        else
+                          Container(
+                            height: 200,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.grey[200],
+                              image: const DecorationImage(
+                                image: AssetImage('assets/images/alt.png'),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: () => showPicker(context),
+                          child: Container(
+                            height: 55,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.white,
+                            ),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Icon(Icons.camera_alt, color: Colors.blue),
-                                  SizedBox(width: 4),
-                                  Center(
-                                    child: Text(
-                                      'เพิ่มข้อมูลจากป้ายสินค้า',
-                                      style: TextStyle(
-                                        color: Colors.blue,
+                                  Container(
+                                    height: 55,
+                                    width: 60,
+                                    decoration: const BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(5),
+                                        bottomLeft: Radius.circular(5),
+                                      ),
+                                      color: Colors.grey,
+                                    ),
+                                    child: const Icon(Icons.camera_alt),
+                                  ),
+                                  const Text('เลือกรูปภาพสินค้า'),
+                                  Container(
+                                    height: 55,
+                                    width: 60,
+                                  )
+                                ]),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        buildUnderlineTextField(nameController, 'ชื่อสินค้า',
+                            'กรอกชื่อสินค้า', false, false),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: buildUnderlineTextField(originalPrice,
+                                  'ราคาดั้งเดิม', 'ราคาดั้งเดิม', false, false),
+                            ),
+                            const SizedBox(width: 60),
+                            Expanded(
+                              child: buildUnderlineTextField(salePrice,
+                                  'ราคาขาย', 'ราคาขาย', false, false),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 190),
+                          child: buildUnderlineTextField(stock, 'จำนวนสินค้า',
+                              'จำนวนสินค้า', false, false),
+                        ),
+                        const SizedBox(height: 10),
+                        customDateField(expiredDate, context, 'วันหมดอายุ', 18),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                showPickerGemini(context);
+                              },
+                              child: Container(
+                                height: 40,
+                                width: 180,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.white,
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.camera_alt, color: Colors.blue),
+                                    SizedBox(width: 4),
+                                    Center(
+                                      child: Text(
+                                        'เพิ่มข้อมูลจากป้ายสินค้า',
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                        ),
                                       ),
                                     ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Container(
+                              child: ElevatedButton(
+                                onPressed:
+                                    _imageGemini != null ? sentImageFunc : null,
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor:
+                                      Color.fromARGB(255, 156, 156, 156),
+                                  backgroundColor: const Color.fromARGB(
+                                      255, 255, 255, 255), // Text color
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Container(
-                            // color: Color(0xFFFF6838),
-                            child: ElevatedButton(
-                              onPressed:
-                                  _imageGemini != null ? sentImageFunc : null,
-                              style: ElevatedButton.styleFrom(
-                                // elevation: 0,
-                                foregroundColor:
-                                    Color.fromARGB(255, 156, 156, 156),
-                                backgroundColor: const Color.fromARGB(
-                                    255, 255, 255, 255), // Text color
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
+                                  minimumSize:
+                                      Size(120, 40), // Width and height
                                 ),
-                                minimumSize: Size(120, 40), // Width and height
-                              ),
-                              child: const Text(
-                                'ยืนยัน',
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 141, 141, 141),
+                                child: const Text(
+                                  'ยืนยัน',
+                                  style: TextStyle(
+                                    color: Color.fromARGB(255, 141, 141, 141),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 15),
-              InkWell(
-                onTap: () {
-                  addProductFunc();
-                },
-                child: Container(
-                  height: 40,
-                  width: 180,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    color: Colors.green,
-                  ),
-                  child: const Center(
-                    child: Text('เพิ่มสินค้า',
-                        style: TextStyle(color: Colors.white)),
+                SizedBox(height: 15),
+                InkWell(
+                  onTap: () {
+                    addProductFunc();
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.green,
+                    ),
+                    child: const Center(
+                      child: Text('เพิ่มสินค้า',
+                          style: TextStyle(color: Colors.white)),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ));
+          if (isLoadingGemini)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

@@ -291,15 +291,6 @@ class ProductCard extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 4),
-                Center(
-                  child: Text(
-                    'รายละเอียดสินค้า',
-                    style: TextStyle(
-                      color: const Color.fromARGB(255, 57, 57, 57),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),

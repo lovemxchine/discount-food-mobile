@@ -24,6 +24,11 @@ class FirebaseAuthService {
     } on FirebaseAuthException catch (e) {
       print('งงเงย');
       handleFirebaseAuthError(e);
+      Fluttertoast.showToast(
+        msg: handleFirebaseAuthError(e),
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
       return null;
     } catch (e) {
       print("An unexpected error occurred: $e");
@@ -73,7 +78,8 @@ class FirebaseAuthService {
       default:
         errorMessage = "An unknown error occurred: ${e.code}";
     }
-    print("ERRORR");
+    print("ERRORRs");
+
     print(errorMessage);
     return errorMessage;
   }
