@@ -43,6 +43,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
   late TextEditingController openAtController = TextEditingController();
   late TextEditingController closeAtController = TextEditingController();
+  late TextEditingController telController = TextEditingController();
 
   late TextEditingController _nameController = TextEditingController();
   late TextEditingController _emailController = TextEditingController();
@@ -154,11 +155,13 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     return prefs.getString('user_uid');
   }
 
-  Future<void> updateTimeSet() async {
+  Future<void> updateShopString() async {
     String openAt = openAtController.text.trim();
     String closeAt = closeAtController.text.trim();
+    String name = shopNameController.text.trim();
+    String tel = telController.text.trim();
     String? uid = await getUID();
-    final url = Uri.parse("$pathAPI/shop/updateTimeSet?uid=$uid");
+    final url = Uri.parse("$pathAPI/shop/updateShop?uid=$uid");
     try {
       final response = await http.post(
         url,
@@ -166,6 +169,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
+          "name": name,
+          "tel": tel,
           "openAt": openAt,
           "closeAt": closeAt,
         }),
@@ -200,6 +205,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           shopImgCoverUrlController.text =
               shopDetail['data']['shopData']['imgUrl']['shopCoverUrl'] ?? '';
 
+          telController.text = shopDetail['data']['shopData']['tel'] ?? '';
+
           openAtController.text =
               shopDetail['data']['shopData']['openAt'] ?? '';
           closeAtController.text =
@@ -219,6 +226,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         print(shopImgUrlController.text);
         print(accNameController.text);
         print(openAtController.text);
+        print(telController.text);
       } else {
         print("Failed to load data: ${response.statusCode}");
         // Handle the error accordingly
@@ -359,6 +367,22 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                     ),
                                   ),
                                   SizedBox(height: 10),
+                                  Text("เบอร์โทร"),
+                                  SizedBox(height: 5),
+                                  Container(
+                                    height: 40,
+                                    child: TextField(
+                                      controller: telController,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 8, horizontal: 8),
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
                                   Text("เวลาเปิด"),
                                   SizedBox(height: 5),
                                   Container(
@@ -389,6 +413,97 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       ),
                                       style: TextStyle(fontSize: 16),
                                     ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      updateShopString();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 12),
+                                      child: Center(
+                                        child: Text(
+                                          'บันทึกข้อมูล',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ])),
+                          ));
+                    },
+                  );
+                },
+                child: Container(
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.black, // Underline color
+                        width: 1, // Underline thickness
+                      ),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: const Row(children: [
+                    Text(
+                      "ข้อมูลร้านค้า",
+                      style: TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                    Spacer(),
+                    Icon(
+                      Icons.edit,
+                      size: 16,
+                    )
+                  ]),
+                )),
+          ),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: InkWell(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          child: Container(
+                            width: 500,
+                            constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * 0.8,
+                            ),
+                            padding: EdgeInsets.all(16),
+                            child: SingleChildScrollView(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Icon(Icons.close,
+                                            color: Colors.grey[600]),
+                                      ),
+                                    ],
                                   ),
                                   SizedBox(height: 10),
                                   Text("ตำแหน่งร้านค้า"),
@@ -677,7 +792,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                                                       .start,
                                                               children: <Widget>[
                                                                 Row(
-                                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .end,
                                                                   children: [
                                                                     Align(
                                                                       alignment:
@@ -946,7 +1063,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: const Row(children: [
                     Text(
-                      "ข้อมูลร้านค้า",
+                      "ข้อมูลรูปภาพร้านค้า",
                       style: TextStyle(
                         fontSize: 14,
                       ),
@@ -957,8 +1074,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       size: 16,
                     )
                   ]),
-                )
-                ),
+                )),
           ),
         ],
       ),
