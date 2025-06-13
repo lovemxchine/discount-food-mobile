@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/components/textFieldComponent.dart';
 import 'package:mobile/user/page/selectMap.dart';
@@ -442,8 +443,8 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
               ListTile(
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Photo Library'),
-                onTap: () {
-                  getImage4();
+                onTap: () async {
+                  await processImage(ImageSource.gallery);
                   Navigator.of(context).pop();
                 },
               ),
@@ -474,6 +475,88 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
     } on Exception catch (e) {
       print(e);
     }
+  }
+
+  Future<void> processImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 100,
+      );
+
+      if (pickedFile != null) {
+        final File? croppedImage = await cropImage(pickedFile.path);
+        if (croppedImage != null && mounted) {
+          print("_image $croppedImage");
+          setState(() {
+            paymentImage = croppedImage;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error processing image: $e');
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to process image. Please try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<File?> cropImage(String imagePath) async {
+    try {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: imagePath,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 100,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'ปรับแต่งรูปภาพ',
+            toolbarColor: Colors.green,
+            toolbarWidgetColor: Colors.white,
+            backgroundColor: Colors.white,
+            activeControlsWidgetColor: Colors.green,
+            dimmedLayerColor: Colors.black.withOpacity(0.5),
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+            statusBarColor: Colors.green,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        return File(croppedFile.path);
+      }
+    } catch (e) {
+      print('Error cropping image: $e');
+      // Show error dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to crop image. Please try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+    return null;
   }
 
   Future<void> openCamera4(BuildContext context) async {
@@ -612,14 +695,6 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
         request.fields['payment[bankNumber]'] = bankNumberController.text ?? '';
         List<http.MultipartFile> imageFiles = [];
 
-        // Add payment image
-        if (paymentImage != null) {
-          imageFiles.add(await http.MultipartFile.fromPath(
-            'images',
-            paymentImage!.path,
-          ));
-        }
-
         // Add image files
 
         if (ShopCoverImg != null) {
@@ -643,6 +718,13 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
           ));
         }
 
+        // Add payment image
+        if (paymentImage != null) {
+          imageFiles.add(await http.MultipartFile.fromPath(
+            'images',
+            paymentImage!.path,
+          ));
+        }
         request.files.addAll(imageFiles);
 
         // Send the request
@@ -654,6 +736,12 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
             regisLoading = false;
           });
           print('Uploaded successfully');
+          Fluttertoast.showToast(
+            msg:
+                "สมัครสมาชิกสำเร็จ ทางเราจะส่งข้อความผ่านทางอีเมล์ \nเมื่อบัญชีของคุณได้รับการอนุมัติแล้ว",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+          );
           Navigator.pushNamed(context, '/signIn');
         } else {
           setState(() {
@@ -1479,7 +1567,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                           ),
                         const SizedBox(height: 16),
                         CustomImageUploadButton(
-                          label: 'อัปโหลดรูปหน้าสมุดบัญชี',
+                          label: 'อัปโหลดรูป QR Code ธนาคารของร้านค้า',
                           onPressed: () {
                             // เพิ่มฟังก์ชันเลือกรูปภาพสมุดบัญชีที่นี่
                             showPicker4(context);
