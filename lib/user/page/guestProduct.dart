@@ -80,13 +80,19 @@ class _GuestProductInShopState extends State<GuestProductInShop> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    width: double.infinity,
-                    height: 200,
-                    child: Image.asset(
-                      'assets/images/alt.png',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                      width: double.infinity,
+                      height: 200,
+                      child: Image.network(
+                        widget.shopData['imgUrl'] != null &&
+                                widget.shopData['imgUrl']['shopCoverUrl'] !=
+                                    null &&
+                                widget.shopData['imgUrl']['shopCoverUrl']
+                                    .toString()
+                                    .isNotEmpty
+                            ? widget.shopData['imgUrl']['shopCoverUrl']
+                            : 'https://via.placeholder.com/400x200',
+                        fit: BoxFit.cover,
+                      )),
                 ),
                 Expanded(
                   child: Container(
@@ -106,8 +112,17 @@ class _GuestProductInShopState extends State<GuestProductInShop> {
                                   height: 100,
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: AssetImage(
-                                          'assets/images/alt.png'), // ใช้ AssetImage
+                                      image: NetworkImage(
+                                        widget.shopData['imgUrl']['shopUrl'] !=
+                                                    null &&
+                                                widget.shopData['imgUrl']
+                                                        ['shopUrl']
+                                                    .toString()
+                                                    .isNotEmpty
+                                            ? widget.shopData['imgUrl']
+                                                ['shopUrl']
+                                            : 'https://via.placeholder.com/100', // fallback image
+                                      ),
                                       fit: BoxFit.cover,
                                     ),
                                   ),

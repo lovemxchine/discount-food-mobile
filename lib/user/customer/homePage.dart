@@ -269,6 +269,8 @@ class _HomepageState extends State<Homepage> {
                                         vertical: 8, horizontal: 20),
                                     child: InkWell(
                                       onTap: () {
+                                        // Navigator.pushNamed(
+                                        //     context, "/googleMap");
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(

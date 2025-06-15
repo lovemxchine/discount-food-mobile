@@ -33,6 +33,8 @@ import 'package:mobile/user/shop/shopProductDetailScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'user/customer/googleMapPoc.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -60,10 +62,9 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _setApiUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        'apiUrl',
-        // 'http://10.0.2.2:3000'); //TODO: dont forget to change to https://discount-food-api.onrender.com
-        'https://discount-food-api.onrender.com'); //TODO: dont forget to change to https://discount-food-api.onrender.com
+    await prefs.setString('apiUrl',
+        'http://10.0.2.2:3000'); //TODO: dont forget to change to https://discount-food-api.onrender.com
+    // 'https://discount-food-api.onrender.com'); //TODO: dont forget to change to https://discount-food-api.onrender.com
   }
 
   @override
@@ -104,6 +105,7 @@ class _MyAppState extends State<MyApp> {
           //'/customer/reportShop': (context) => Reportshop(),
           //'/customer/submitPayment': (context) => Submitpayment(),
           // '/customer/mailboxDetail': (context) => MailBoxDetailPage(),
+          '/googleMap': (context) => LocationPickerScreen(),
         });
   }
 }

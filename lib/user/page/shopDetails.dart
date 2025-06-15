@@ -51,11 +51,10 @@ class _ShopDetailsState extends State<ShopDetails> {
                     //     },
                     //   ),
                     // ),
-                    Container(
-                      height: 200,
-          
-                    ),
-                    SizedBox(height: 16),
+                    // Container(
+                    //   height: 200,
+                    // ),
+                    // SizedBox(height: 16),
                     Text(
                       widget.shopData['name'],
                       style: TextStyle(
@@ -72,27 +71,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                       ),
                     ),
                     SizedBox(height: 4),
-                    Row(
-                      children: [
-                        widget.shopData['deliveryAllow']
-                            ? Icon(Icons.local_shipping, color: Colors.blue)
-                            : Icon(Icons.cancel, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text(
-                          widget.shopData['deliveryAllow']
-                              ? 'มีบริการจัดส่ง'
-                              : 'ไม่มีบริการจัดส่ง',
-                          style: TextStyle(
-                            color: widget.shopData['deliveryAllow']
-                                ? Colors.blue
-                                : Colors.red,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
+
                     Divider(),
                     SizedBox(height: 16),
                     Row(

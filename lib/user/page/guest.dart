@@ -195,6 +195,7 @@ class _GuestScreenState extends State<GuestScreen> {
                             : SingleChildScrollView(
                                 child: Column(
                                   children: filteredItems.map((item) {
+                                    print(item);
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 20),
@@ -234,9 +235,22 @@ class _GuestScreenState extends State<GuestScreen> {
                                                 height: 80,
                                                 decoration: BoxDecoration(
                                                   color: Colors.grey,
-                                                  image: const DecorationImage(
-                                                    image: AssetImage(
-                                                        'assets/images/alt.png'),
+                                                  image: DecorationImage(
+                                                    image: item['imgUrl'] !=
+                                                                null &&
+                                                            item['imgUrl'][
+                                                                    'shopUrl'] !=
+                                                                null &&
+                                                            item['imgUrl']
+                                                                    ['shopUrl']
+                                                                .toString()
+                                                                .isNotEmpty
+                                                        ? NetworkImage(
+                                                            item['imgUrl']
+                                                                ['shopUrl'])
+                                                        : const AssetImage(
+                                                                'assets/images/alt.png')
+                                                            as ImageProvider,
                                                     fit: BoxFit.cover,
                                                   ),
                                                   borderRadius:

@@ -12,6 +12,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/components/textFieldComponent.dart';
+import 'package:mobile/user/customer/googleMapPoc.dart';
 import 'package:mobile/user/page/selectMap.dart';
 import 'package:mobile/user/service/auth.dart';
 import 'package:http/http.dart' as http;
@@ -323,10 +324,16 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
 
   Future<void> openCamera(BuildContext context) async {
     final XFile? image = await picker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      // Handle the captured image
-      print('Image path: ${image.path}');
-    }
+    print("object");
+    setState(() {
+      if (image != null) {
+        ShopCoverImg = File(image.path);
+        print(ShopCoverImg);
+        // Update the state with the new image
+        print('Image path: ${image.path}');
+      }
+    });
+    // Handle the captured image
   }
 
   void showPicker2(BuildContext context) {
@@ -348,7 +355,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                 leading: const Icon(Icons.photo_camera),
                 title: const Text('Camera'),
                 onTap: () {
-                  openCamera(context);
+                  openCamera2(context);
                   Navigator.of(context).pop();
                 },
               ),
@@ -365,7 +372,9 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
 
       setState(() {
         if (pickedFile != null) {
+          print("object2");
           ShopImg = File(pickedFile.path);
+          print(ShopImg);
         }
       });
     } on Exception catch (e) {
@@ -375,10 +384,13 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
 
   Future<void> openCamera2(BuildContext context) async {
     final XFile? image = await picker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      // Handle the captured image
-      print('Image path: ${image.path}');
-    }
+    setState(() {
+      if (image != null) {
+        ShopImg = File(image.path);
+        print('Image path: ${image.path}');
+      }
+    });
+    // Handle the captured image
   }
 
   void showPicker3(BuildContext context) {
@@ -400,7 +412,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                 leading: const Icon(Icons.photo_camera),
                 title: const Text('Camera'),
                 onTap: () {
-                  openCamera(context);
+                  openCamera3(context);
                   Navigator.of(context).pop();
                 },
               ),
@@ -427,10 +439,13 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
 
   Future<void> openCamera3(BuildContext context) async {
     final XFile? image = await picker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      // Handle the captured image
-      print('Image path: ${image.path}');
-    }
+    setState(() {
+      if (image != null) {
+        CertificateImg = File(image.path);
+        print('Image path: ${image.path}');
+      }
+    });
+    // Handle the captured image
   }
 
   void showPicker4(BuildContext context) {
@@ -452,7 +467,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                 leading: const Icon(Icons.photo_camera),
                 title: const Text('Camera'),
                 onTap: () {
-                  openCamera(context);
+                  openCamera4(context);
                   Navigator.of(context).pop();
                 },
               ),
@@ -561,10 +576,14 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
 
   Future<void> openCamera4(BuildContext context) async {
     final XFile? image = await picker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      // Handle the captured image
-      print('Image path: ${image.path}');
-    }
+    setState(() {
+      if (image != null) {
+        paymentImage = File(image.path);
+
+        print('Image path: ${image.path}');
+      }
+    });
+    // Handle the captured image
   }
 
   @override
@@ -755,6 +774,34 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
         regisLoading = false;
       });
       _auth.handleFirebaseAuthError(e);
+    }
+  }
+
+  void _pickLocation() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LocationPickerScreen()),
+    );
+    if (result != null) {
+      print("result $result");
+
+      setState(() {
+        if (result is LatLng) {
+          googleLocate['lat'] = result.latitude;
+          googleLocate['lng'] = result.longitude;
+          googleLocate['formatted_address'] = "";
+          googleLocate['place_name'] = "";
+        } else if (result is Map) {
+          googleLocate['lat'] = result['lat'];
+          googleLocate['lng'] = result['lng'];
+          googleLocate['formatted_address'] = result['formatted_address'];
+          googleLocate['place_name'] = result['place_name'];
+        }
+        print("googleLocate $googleLocate");
+        pinMap = true;
+      });
+
+      // Use the picked location
     }
   }
 
@@ -962,19 +1009,14 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            SelectMapLocate()),
-                                  );
-                                  print(result);
-                                  setState(() {
-                                    if (result != null) {
-                                      googleLocate = result;
-                                      pinMap = true;
-                                    }
-                                  });
+                                  _pickLocation();
+                                  // print('test ${result as LatLng?}');
+                                  // setState(() {
+                                  //   if (result != null) {
+                                  //     // googleLocate = result;
+                                  //     pinMap = true;
+                                  //   }
+                                  // });
                                 },
                                 style: ElevatedButton.styleFrom(
                                   side: const BorderSide(

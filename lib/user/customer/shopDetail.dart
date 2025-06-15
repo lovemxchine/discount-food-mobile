@@ -53,17 +53,52 @@ class _ShopdetailState extends State<Shopdetail> {
     });
   }
 
+  Future<String?> getUID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_uid');
+  }
+
+  Future<bool> reportShop({
+    required String title,
+    required String description,
+  }) async {
+    String apiUrl = await fetchUrl();
+    String userUid = await getUID() ?? '';
+    final url = Uri.parse('$apiUrl/customer/reportShop');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userUid': userUid,
+        'shopUid': shopData?['uid'] ?? shopUid,
+        'shopName': shopData?['name'],
+        'title': title,
+        'description': description,
+      }),
+    );
+    print('Report response: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      // Success
+      return true;
+    } else {
+      // Error
+      print('Report failed: ${response.body}');
+      return false;
+    }
+  }
+
   Future<void> initFetch() async {
     await fetchUrl();
     await _fetchShopDetails();
   }
 
-  Future<void> fetchUrl() async {
+  Future<String> fetchUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
     });
     print("API Path: $pathAPI");
+    return prefs.getString('apiUrl') as String;
   }
 
   Future<void> _fetchShopDetails() async {
@@ -285,21 +320,7 @@ class _ShopdetailState extends State<Shopdetail> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.local_shipping, color: Colors.blue),
-                            SizedBox(width: 8),
-                            Text(
-                              'มีบริการจัดส่ง',
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+
                         SizedBox(height: 16),
                         Divider(),
                         SizedBox(height: 16),
@@ -500,7 +521,32 @@ class Reportshop extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () async {
+              // Get the nearest ancestor state of type _ShopdetailState
+              final shopDetailState =
+                  context.findAncestorStateOfType<_ShopdetailState>();
+              if (shopDetailState == null) {
+                // Could not find the parent state, show error or handle gracefully
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content:
+                          const Text('เกิดข้อผิดพลาด ไม่สามารถส่งรายงานได้')),
+                );
+                return;
+              }
+
+              // You should get the values from the TextFields instead of hardcoding
+              // For demo, using static values
+              bool success = await shopDetailState.reportShop(
+                title: 'หัวข้อร้องเรียน',
+                description: 'รายละเอียด',
+              );
+              if (success) {
+                // Show success message
+              } else {
+                // Show error message
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 12),
@@ -509,7 +555,7 @@ class Reportshop extends StatelessWidget {
               ),
             ),
             child: const Text(
-              "ยืนยัน",
+              "รายงาน",
               style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,

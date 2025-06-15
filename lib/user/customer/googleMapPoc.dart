@@ -11,6 +11,20 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   LatLng? _pickedLocation;
   GoogleMapController? _mapController;
   Position? _currentPosition;
+  Map<String, dynamic> get googleLocate => {
+        'lat': _pickedLocation?.latitude,
+        'lng': _pickedLocation?.longitude,
+        'formatted_address':
+            null, // You can update this if you implement reverse geocoding
+        'place_name':
+            null, // You can update this if you implement place name lookup
+      };
+
+  void _returnLocationData() {
+    if (_pickedLocation != null) {
+      Navigator.pop(context, googleLocate);
+    }
+  }
 
   @override
   void initState() {
@@ -77,6 +91,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 ? null
                 : () {
                     Navigator.pop(context, _pickedLocation);
+                    
                   },
           ),
         ],
