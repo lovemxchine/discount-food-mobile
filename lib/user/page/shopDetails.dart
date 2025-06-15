@@ -142,35 +142,6 @@ class _ShopDetailsState extends State<ShopDetails> {
                   ],
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // ฟังก์ชันเมื่อกดปุ่ม "รายงาน"
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 34, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 5,
-                      shadowColor: Colors.black,
-                    ),
-                    child: Text(
-                      'รายงาน',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),

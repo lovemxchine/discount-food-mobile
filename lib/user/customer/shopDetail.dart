@@ -23,7 +23,10 @@ class _ShopdetailState extends State<Shopdetail> {
   List<dynamic> listProducts = [];
   List<dynamic> filteredItems = [];
   Map<String, dynamic>? shopData;
-  TextEditingController searchController = TextEditingController();
+  TextEditingController titleController =
+      TextEditingController(); // Fixed: for title
+  TextEditingController descriptionController =
+      TextEditingController(); // Fixed: for description
   bool _isLoading = false;
   var pathAPI = '';
   late String shopUid;
@@ -33,24 +36,13 @@ class _ShopdetailState extends State<Shopdetail> {
     super.initState();
     shopUid = widget.shopData['uid'];
     initFetch();
-    searchController.addListener(filterItems);
   }
 
   @override
   void dispose() {
-    searchController.removeListener(filterItems);
-    searchController.dispose();
+    titleController.dispose();
+    descriptionController.dispose();
     super.dispose();
-  }
-
-  void filterItems() {
-    setState(() {
-      filteredItems = listProducts
-          .where((item) => item['name']
-              .toLowerCase()
-              .contains(searchController.text.toLowerCase()))
-          .toList();
-    });
   }
 
   Future<String?> getUID() async {
@@ -194,18 +186,8 @@ class _ShopdetailState extends State<Shopdetail> {
       debugPrint('Current location: $location');
     }
 
-    initState() {
-      super.initState();
-      getCurrentLocation();
-    }
-
-    // void _refreshMap() {
-    //   setState(() {
-    //     // Update map data, e.g., move the center or update zoom
-    //     latitude = 13.7700;
-    //     longitude = 100.5100;
-    //   });
-    // }
+    // Fixed: This should be called once in initState, not inside build
+    // getCurrentLocation();
 
     if (location != 'Unknown location') {
       List<String> latLng = location.split(',');
@@ -215,6 +197,7 @@ class _ShopdetailState extends State<Shopdetail> {
       latitude = 0.0;
       longitude = 0.0;
     }
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -239,72 +222,6 @@ class _ShopdetailState extends State<Shopdetail> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // TODO: google map disply place
-                        // Container(
-                        //   height: 200,
-                        //   decoration: BoxDecoration(
-                        //     borderRadius: BorderRadius.circular(8),
-                        //   ),
-                        //   child: ClipRRect(
-                        //     borderRadius: BorderRadius.circular(8),
-                        //     child: GoogleMap(
-                        //       onMapCreated: (GoogleMapController controller) {
-                        //         // Optional: Store controller for future use
-                        //       },
-                        //       initialCameraPosition: CameraPosition(
-                        //         target: LatLng(
-                        //           shopData?['shopLocation_th']?['lat']
-                        //                   ?.toDouble() ??
-                        //               0.0,
-                        //           shopData?['shopLocation_th']?['lng']
-                        //                   ?.toDouble() ??
-                        //               0.0,
-                        //         ),
-                        //         zoom: 15.0,
-                        //       ),
-                        //       markers: {
-                        //         Marker(
-                        //           markerId: const MarkerId('location_1'),
-                        //           position: LatLng(
-                        //             shopData?['shopLocation_th']?['lat']
-                        //                     ?.toDouble() ??
-                        //                 0.0,
-                        //             shopData?['shopLocation_th']?['lng']
-                        //                     ?.toDouble() ??
-                        //                 0.0,
-                        //           ),
-                        //           icon: BitmapDescriptor.defaultMarkerWithHue(
-                        //               BitmapDescriptor.hueRed),
-                        //         ),
-                        //         Marker(
-                        //           markerId: const MarkerId('location_2'),
-                        //           position: LatLng(
-                        //             // Add your second location coordinates here
-                        //             shopData?['secondLocation']?['lat']
-                        //                     ?.toDouble() ??
-                        //                 0.0,
-                        //             shopData?['secondLocation']?['lng']
-                        //                     ?.toDouble() ??
-                        //                 0.0,
-                        //           ),
-                        //           icon: BitmapDescriptor.defaultMarkerWithHue(
-                        //               BitmapDescriptor.hueBlue),
-                        //         ),
-                        //       },
-                        //       mapType: MapType.normal,
-                        //       myLocationEnabled: false,
-                        //       myLocationButtonEnabled: false,
-                        //       zoomControlsEnabled: true,
-                        //       mapToolbarEnabled: false,
-                        //       compassEnabled: true,
-                        //       rotateGesturesEnabled: true,
-                        //       scrollGesturesEnabled: true,
-                        //       tiltGesturesEnabled: true,
-                        //       zoomGesturesEnabled: true,
-                        //     ),
-                        //   ),
-                        // ),
-                        // SizedBox(height: 16),
                         Text(
                           shopData?['name'],
                           style: TextStyle(
@@ -320,7 +237,6 @@ class _ShopdetailState extends State<Shopdetail> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         SizedBox(height: 16),
                         Divider(),
                         SizedBox(height: 16),
@@ -422,7 +338,12 @@ class _ShopdetailState extends State<Shopdetail> {
                                   ),
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.decelerate,
-                                  child: Reportshop(),
+                                  child: Reportshop(
+                                    titleController: titleController,
+                                    descriptionController:
+                                        descriptionController,
+                                    onReport: reportShop,
+                                  ),
                                 ),
                               );
                             },
@@ -457,7 +378,17 @@ class _ShopdetailState extends State<Shopdetail> {
 }
 
 class Reportshop extends StatelessWidget {
-  const Reportshop({super.key});
+  final TextEditingController titleController;
+  final TextEditingController descriptionController;
+  final Future<bool> Function(
+      {required String title, required String description}) onReport;
+
+  const Reportshop({
+    super.key,
+    required this.titleController,
+    required this.descriptionController,
+    required this.onReport,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -483,9 +414,11 @@ class Reportshop extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
             child: TextField(
+              controller: titleController, // Fixed: Use the correct controller
               decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
+                  hintText: 'กรุณาระบุหัวข้อ',
                   hintStyle: const TextStyle(
                     color: Colors.grey,
                   ),
@@ -507,9 +440,12 @@ class Reportshop extends StatelessWidget {
             child: TextField(
               minLines: 8,
               maxLines: 13,
+              controller:
+                  descriptionController, // Fixed: Use the correct controller
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white,
+                hintText: 'กรุณาระบุรายละเอียด',
                 hintStyle: const TextStyle(
                   color: Colors.grey,
                 ),
@@ -522,29 +458,76 @@ class Reportshop extends StatelessWidget {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () async {
-              // Get the nearest ancestor state of type _ShopdetailState
-              final shopDetailState =
-                  context.findAncestorStateOfType<_ShopdetailState>();
-              if (shopDetailState == null) {
-                // Could not find the parent state, show error or handle gracefully
+              // Validate input
+              if (titleController.text.trim().isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content:
-                          const Text('เกิดข้อผิดพลาด ไม่สามารถส่งรายงานได้')),
+                  const SnackBar(content: Text('กรุณาระบุหัวข้อ')),
                 );
                 return;
               }
 
-              // You should get the values from the TextFields instead of hardcoding
-              // For demo, using static values
-              bool success = await shopDetailState.reportShop(
-                title: 'หัวข้อร้องเรียน',
-                description: 'รายละเอียด',
-              );
-              if (success) {
-                // Show success message
-              } else {
-                // Show error message
+              if (descriptionController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('กรุณาระบุรายละเอียด')),
+                );
+                return;
+              }
+
+              try {
+                // Show loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                );
+
+                // Send report
+                bool success = await onReport(
+                  title: titleController.text.trim(),
+                  description: descriptionController.text.trim(),
+                );
+
+                // Hide loading
+                Navigator.of(context).pop();
+
+                if (success) {
+                  // Clear the form
+                  titleController.clear();
+                  descriptionController.clear();
+
+                  // Close the dialog
+                  Navigator.of(context).pop();
+
+                  // Show success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('ส่งรายงานเรียบร้อยแล้ว'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } else {
+                  // Show error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('เกิดข้อผิดพลาด ไม่สามารถส่งรายงานได้'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                // Hide loading if still showing
+                Navigator.of(context).pop();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('เกิดข้อผิดพลาด: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             style: ElevatedButton.styleFrom(
