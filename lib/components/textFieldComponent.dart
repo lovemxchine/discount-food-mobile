@@ -204,3 +204,62 @@ class CustomImageUploadButton extends StatelessWidget {
     );
   }
 }
+
+/// A date field that displays the date as "DD/MM/YYYY" but stores the value as ISO (yyyy-mm-dd) in the controller.
+Widget customISODateField(TextEditingController controller,
+    BuildContext context, String label, int labelSize) {
+  String labelText = label;
+  String? displayText;
+  return StatefulBuilder(
+    builder: (context, setState) {
+      return TextField(
+        readOnly: true,
+        controller: TextEditingController(
+            text: displayText ?? _displayFromISO(controller.text)),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle:
+              TextStyle(color: Colors.black, fontSize: labelSize.toDouble()),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          contentPadding: EdgeInsets.only(top: 5),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+          ),
+          hintText: "DD/MM/YYYY",
+          hintStyle: TextStyle(color: Colors.grey),
+          suffixIcon: Icon(Icons.calendar_today),
+        ),
+        onTap: () async {
+          DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: controller.text.isNotEmpty
+                ? DateTime.tryParse(controller.text) ?? DateTime.now()
+                : DateTime.now(),
+            firstDate: DateTime(1900),
+            lastDate: DateTime(2100),
+          );
+          if (pickedDate != null) {
+            String iso =
+                "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+            controller.text = iso;
+            setState(() {
+              displayText =
+                  "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+            });
+          }
+        },
+      );
+    },
+  );
+}
+
+/// Helper to convert ISO string to DD/MM/YYYY for display
+String _displayFromISO(String iso) {
+  if (iso.isEmpty) return '';
+  try {
+    final date = DateTime.parse(iso);
+    return "${date.day}/${date.month}/${date.year}";
+  } catch (_) {
+    return '';
+  }
+}

@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/components/textFieldComponent.dart';
@@ -52,6 +54,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   late TextEditingController shopImgUrlController = TextEditingController();
   late TextEditingController shopImgCoverUrlController =
       TextEditingController();
+
+  File? newShopImage;
+  File? newShopCoverImage;
+  File? newShopQrImage;
+
   var pathAPI = '';
   @override
   void initState() {
@@ -59,27 +66,56 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     initFetch();
   }
 
-  Future getImage() async {
-    try {
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
+  Future<void> openCameraShop(BuildContext context) async {
+    final XFile? image = await picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
       setState(() {
-        if (pickedFile != null) {
-          _saveImage(File(pickedFile.path));
-          setState(() {
-            shopImgUrlController =
-                File(pickedFile.path) as TextEditingController;
-          });
-        }
+        newShopImage = File(image.path);
+        // shopImgUrlController.text = image.path;
       });
-    } on Exception catch (e) {
-      print(e);
+      // Handle the captured image
+      print('Image path: ${image.path}');
     }
   }
 
-  Future<void> openCamera(BuildContext context) async {
+  Future<void> openCameraShopCover(BuildContext context) async {
     final XFile? image = await picker.pickImage(source: ImageSource.camera);
     if (image != null) {
+      setState(() {
+        newShopCoverImage = File(image.path);
+        // shopImgUrlController.text = image.path;
+      });
+      // Handle the captured image
+      print('Image path: ${image.path}');
+    }
+  }
+
+  Future<void> openCameraShopQr(BuildContext context) async {
+    final XFile? image = await picker.pickImage(source: ImageSource.camera);
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: image!.path,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 100,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'ปรับแต่งรูปภาพ',
+          toolbarColor: Colors.green,
+          toolbarWidgetColor: Colors.white,
+          backgroundColor: Colors.white,
+          activeControlsWidgetColor: Colors.green,
+          dimmedLayerColor: Colors.black.withOpacity(0.5),
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+          statusBarColor: Colors.green,
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      setState(() {
+        newShopQrImage = File(croppedFile!.path);
+        // shopImgUrlController.text = image.path;
+      });
       // Handle the captured image
       print('Image path: ${image.path}');
     }
@@ -96,7 +132,76 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Photo Library'),
                 onTap: () {
-                  initImage();
+                  getImageShop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  // emptyDialogContent();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Camera'),
+                onTap: () {
+                  openCameraShop(context);
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  // emptyDialogContent();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void showPickerCover(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Photo Library'),
+                onTap: () {
+                  getImageShopCover();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  // emptyDialogContent();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Camera'),
+                onTap: () {
+                  openCameraShopCover(context);
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  // emptyDialogContent();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void showPickerQR(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Photo Library'),
+                onTap: () {
+                  getImageShopQR();
+                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 },
               ),
@@ -104,7 +209,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 leading: const Icon(Icons.photo_camera),
                 title: const Text('Camera'),
                 onTap: () {
-                  openCamera(context);
+                  openCameraShopQr(context);
+                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 },
               ),
@@ -136,18 +242,187 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     await _fetchData();
   }
 
-  Future<void> initImage() async {
-    await fetchUrl();
-    await getImage();
+  Future getImageShop() async {
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        if (shopImgUrlController.text.isNotEmpty) {
+          await PaintingBinding.instance.imageCache
+              .evict(NetworkImage(shopImgUrlController.text));
+        }
+        // _saveImage(File(pickedFile.path));
+        setState(() {
+          newShopImage = File(pickedFile.path);
+          // shopImgUrlController.text = pickedFile.path;
+          print("After setState: newShopCoverImage = $newShopImage");
+          print("File exists: ${newShopImage!.existsSync()}");
+        });
+      }
+    } on Exception catch (e) {
+      print(e);
+    }
   }
 
-  Future<void> fetchUrl() async {
+  Future getImageShopCover() async {
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        // _saveImage(File(pickedFile.path));
+        setState(() {
+          newShopCoverImage = File(pickedFile.path);
+          // shopImgCoverUrlController.text = pickedFile.path;
+        });
+      }
+    } on Exception catch (e) {
+      print(e);
+    }
+  }
+
+  Future getImageShopQR() async {
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile!.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 100,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'ปรับแต่งรูปภาพ',
+            toolbarColor: Colors.green,
+            toolbarWidgetColor: Colors.white,
+            backgroundColor: Colors.white,
+            activeControlsWidgetColor: Colors.green,
+            dimmedLayerColor: Colors.black.withOpacity(0.5),
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+            statusBarColor: Colors.green,
+          ),
+        ],
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          newShopQrImage = File(croppedFile!.path);
+          // qrImgController.text = pickedFile.path;
+        });
+      }
+    } on Exception catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> updateImageShop() async {
+    try {
+      String? uid = await getUID();
+      // Create the request
+      final url = Uri.parse("$pathAPI/shop/updateShopImages?uid=${uid}");
+      var request = http.MultipartRequest('POST', url);
+
+      List<http.MultipartFile> imageFiles = [];
+
+      // Add image files
+
+      if (newShopImage != null) {
+        imageFiles.add(await http.MultipartFile.fromPath(
+          'images',
+          newShopImage!.path,
+        ));
+      }
+
+      if (newShopCoverImage != null) {
+        imageFiles.add(await http.MultipartFile.fromPath(
+          'images',
+          newShopCoverImage!.path,
+        ));
+      }
+
+      request.files.addAll(imageFiles);
+
+      // Send the request
+      var response = await request.send();
+
+      // Read the response
+      if (response.statusCode == 200) {
+        print('Uploaded successfully');
+        Fluttertoast.showToast(
+          msg: "อัปโหลดรูปภาพสำเร็จ",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+        );
+      } else {
+        print('Failed to upload');
+      }
+    } catch (e) {
+      print('Error: $e');
+      Fluttertoast.showToast(
+        msg: "เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> updatePaymentShop() async {
+    try {
+      String? uid = await getUID();
+      // Create the request
+      String? urls = await fetchUrl();
+      final url = Uri.parse("$urls/shop/updatePayment");
+      var request = http.MultipartRequest('POST', url);
+      request.fields['shopId'] = uid ?? '';
+      request.fields['accName'] = accNameController.text.trim();
+      request.fields['bankName'] = bankNameController.text.trim();
+      request.fields['bankNumber'] = bankNumberController.text.trim();
+      // List<http.MultipartFile> imageFiles = [];
+
+      // Add image files
+
+      if (newShopQrImage != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'image',
+          newShopQrImage!.path,
+        ));
+      }
+
+      // Send the request
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      final responseData = jsonDecode(response.body);
+
+      // Read the response
+      if (response.statusCode == 200) {
+        print('Uploaded successfully');
+        Fluttertoast.showToast(
+          msg: "อัปเดตข้อมูลสำเร็จ",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+        );
+      } else {
+        print(
+            'Failed to upload: ${response.statusCode} - ${responseData['message']}');
+        print('Failed to upload');
+      }
+    } catch (e) {
+      print('Error: $e');
+      Fluttertoast.showToast(
+        msg: "เกิดข้อผิดพลาดในการอัปเดตข้อมูล",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+      );
+    }
+  }
+
+  Future<String> fetchUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
       pathAPI = prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
     });
     print(pathAPI);
+    return prefs.getString('apiUrl') ?? 'http://10.0.2.2:3000';
   }
 
   Future<String?> getUID() async {
@@ -177,6 +452,13 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       );
 
       if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('อัปเดตข้อมูลสำเร็จ'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
         print("Success: ${jsonDecode(response.body)['message']}");
       } else {
         print(" Failed: ${response.statusCode} - ${response.body}");
@@ -237,54 +519,123 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     }
   }
 
-  Future<void> _saveImage(File image) async {
-    print("before fetch");
-    String? uid = await getUID();
-    final url = Uri.parse("$pathAPI/shop/uploadImage");
-    try {
-      var response = await http.post(url,
-          body: jsonEncode({
-            "shopUrl": image,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          });
-      if (response.statusCode == 200) {
-        print("API response: ${response.body}");
-        final responseData = jsonDecode(response.body);
-      } else {
-        print("Failed to load data: ${response.statusCode}");
-        // Handle the error accordingly
-      }
-    } catch (e) {
-      print("Error fetching data: $e");
-      // Handle the error accordingly
-    }
-  }
-
-  Future<void> fetchPaymentData() async {
-    String? uid = await getUID();
-    final url = Uri.parse("$pathAPI/shop/getPayment?shopId=${uid}");
-    print("Fetching payment data from: $url");
-    print("$pathAPI/shop/getPayment?shopId=$widget.shopId");
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final payment = data['data'] ?? {};
-        setState(() {
-          payments['qrImg'] = payment['qrImg'] ?? '';
-          payments['accountName'] = payment['accountName'] ?? '';
-          payments['bankName'] = payment['bankName'] ?? '';
-          payments['bankNumber'] = payment['bankNumber'] ?? '';
-        });
-        print(payments);
-      } else {
-        print("Failed to load payment data: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error fetching payment data: $e");
-    }
+  Future emptyDialogContent() {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          child: Container(
+            width: 600,
+            constraints: BoxConstraints(
+              maxHeight:
+                  MediaQuery.of(context).size.height * 0.85, // ป้องกันล้นจอ
+            ),
+            padding: EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Icon(Icons.close, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 200,
+                    child: newShopImage != null
+                        ? Image.file(
+                            newShopImage!,
+                            key: ValueKey(newShopImage!.path +
+                                DateTime.now()
+                                    .millisecondsSinceEpoch
+                                    .toString()), // Add this line
+                            errorBuilder: (context, error, stackTrace) =>
+                                Center(child: Text("Failed to load image")),
+                          )
+                        : shopImgUrlController.text.isNotEmpty
+                            ? Image.network(
+                                key: ValueKey(shopImgUrlController.text +
+                                    DateTime.now()
+                                        .millisecondsSinceEpoch
+                                        .toString()),
+                                shopImgUrlController.text.trim(),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Center(child: Text("Failed to load image")),
+                              )
+                            : const Text("No image available"),
+                  ),
+                  SizedBox(height: 10),
+                  CustomImageUploadButton(
+                    label: 'รูปหน้าปกร้าน',
+                    onPressed: () {
+                      showPicker(context);
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    height: 200,
+                    child: newShopCoverImage != null
+                        ? Image.file(
+                            newShopCoverImage!,
+                            key: ValueKey(
+                                newShopCoverImage!.path), // Add this line
+                            errorBuilder: (context, error, stackTrace) =>
+                                Center(child: Text("Failed to load image")),
+                          )
+                        : shopImgCoverUrlController.text.isNotEmpty
+                            ? Image.network(
+                                shopImgCoverUrlController.text.trim(),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Center(child: Text("Failed to load image")),
+                              )
+                            : const Text("No image available"),
+                  ),
+                  SizedBox(height: 10),
+                  CustomImageUploadButton(
+                    label: 'รูปหน้าปกพื้นหลังร้าน',
+                    onPressed: () {
+                      showPickerCover(context);
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      // updateProfile();
+                      updateImageShop();
+                      Navigator.of(context).pop();
+                    },
+                    child: Center(
+                      child: Text(
+                        'ยืนยันการแก้ไข',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -505,66 +856,20 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 10),
-                                  Text("ตำแหน่งร้านค้า"),
-                                  SizedBox(height: 10),
-                                  Center(
-                                    child: SizedBox(
-                                      height: 50,
-                                      width: double.infinity,
-                                      child: ElevatedButton(
-                                        onPressed: () async {
-                                          final result = await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    SelectMapLocate()),
-                                          );
-                                          print("result of select map");
 
-                                          print(result);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          side: const BorderSide(
-                                              color: Color(0xFFD1D1D1)),
-                                          elevation: 1,
-                                          shadowColor:
-                                              Colors.black.withOpacity(0.1),
-                                          backgroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 12),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.location_on_outlined,
-                                                color: Colors.grey[600],
-                                                size: 20),
-                                            const SizedBox(width: 12),
-                                            Text(
-                                              'แก้ไขร้านค้า',
-                                              style: TextStyle(
-                                                fontFamily: GoogleFonts.mitr()
-                                                    .fontFamily,
-                                                color: Colors.grey[800],
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            const Icon(
-                                                Icons.location_on_outlined,
-                                                color: Colors.transparent,
-                                                size: 20),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
+                                  // Text("ตำแหน่งร้านค้า"),
+                                  // SizedBox(height: 10),
+                                  // Center(
+                                  //   child: SizedBox(
+                                  //     height: 50,
+                                  //     width: double.infinity,
+                                  //     child: ElevatedButton(
+                                  //       onPressed: () async {
+                                  //         final result = await Navigator.push(
+                                  //           context,
+                                  //           MaterialPageRoute(
+                                  //               builder: (context) =>
+
                                   Text("รูปร้านค้า"),
                                   SizedBox(height: 10),
                                   Center(
@@ -573,143 +878,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       width: double.infinity,
                                       child: ElevatedButton(
                                         onPressed: () async {
-                                          showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (BuildContext context) {
-                                              return Dialog(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          15.0),
-                                                ),
-                                                child: Container(
-                                                  width: 600,
-                                                  constraints: BoxConstraints(
-                                                    maxHeight: MediaQuery.of(
-                                                                context)
-                                                            .size
-                                                            .height *
-                                                        0.85, // ป้องกันล้นจอ
-                                                  ),
-                                                  padding: EdgeInsets.all(16),
-                                                  child: SingleChildScrollView(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: <Widget>[
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .end,
-                                                          children: [
-                                                            TextButton(
-                                                              onPressed: () {
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop();
-                                                              },
-                                                              child: Icon(
-                                                                  Icons.close,
-                                                                  color: Colors
-                                                                          .grey[
-                                                                      600]),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Container(
-                                                          width:
-                                                              double.infinity,
-                                                          height: 200,
-                                                          child: shopImgUrlController
-                                                                  .text
-                                                                  .isNotEmpty
-                                                              ? Image.network(
-                                                                  shopImgUrlController
-                                                                      .text
-                                                                      .trim(),
-                                                                  errorBuilder: (context,
-                                                                          error,
-                                                                          stackTrace) =>
-                                                                      Center(
-                                                                          child:
-                                                                              Text("Failed to load image")),
-                                                                )
-                                                              : const Text(
-                                                                  "No image available"),
-                                                        ),
-                                                        SizedBox(height: 10),
-                                                        CustomImageUploadButton(
-                                                          label:
-                                                              'รูปหน้าปกร้าน',
-                                                          onPressed: () {
-                                                            showPicker(context);
-                                                          },
-                                                        ),
-                                                        SizedBox(height: 10),
-                                                        Container(
-                                                          width:
-                                                              double.infinity,
-                                                          height: 200,
-                                                          child: shopImgCoverUrlController
-                                                                  .text
-                                                                  .isNotEmpty
-                                                              ? Image.network(
-                                                                  shopImgCoverUrlController
-                                                                      .text
-                                                                      .trim(),
-                                                                  errorBuilder: (context,
-                                                                          error,
-                                                                          stackTrace) =>
-                                                                      Center(
-                                                                          child:
-                                                                              Text("Failed to load image")),
-                                                                )
-                                                              : const Text(
-                                                                  "No image available"),
-                                                        ),
-                                                        SizedBox(height: 10),
-                                                        CustomImageUploadButton(
-                                                          label:
-                                                              'รูปหน้าปกพื้นหลังร้าน',
-                                                          onPressed: () {
-                                                            showPicker(context);
-                                                          },
-                                                        ),
-                                                        SizedBox(height: 10),
-                                                        ElevatedButton(
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Colors.blue,
-                                                            shape:
-                                                                RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          8),
-                                                            ),
-                                                          ),
-                                                          onPressed: () {
-                                                            // updateProfile();
-                                                          },
-                                                          child: Center(
-                                                            child: Text(
-                                                              'ยืนยันการแก้ไข',
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .white),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          );
+                                          emptyDialogContent();
                                         },
                                         style: ElevatedButton.styleFrom(
                                           side: const BorderSide(
@@ -820,19 +989,27 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                                                   width: double
                                                                       .infinity,
                                                                   height: 200,
-                                                                  child: qrImgController
-                                                                          .text
-                                                                          .isNotEmpty
+                                                                  child: newShopQrImage !=
+                                                                          null
                                                                       ? Image
-                                                                          .network(
-                                                                          qrImgController
-                                                                              .text
-                                                                              .trim(),
+                                                                          .file(
+                                                                          newShopQrImage!,
+                                                                          key: ValueKey(newShopQrImage!.path +
+                                                                              DateTime.now().millisecondsSinceEpoch.toString()),
                                                                           errorBuilder: (context, error, stackTrace) =>
                                                                               Center(child: Text("Failed to load image")),
                                                                         )
-                                                                      : const Text(
-                                                                          "No image available"),
+                                                                      : qrImgController
+                                                                              .text
+                                                                              .isNotEmpty
+                                                                          ? Image
+                                                                              .network(
+                                                                              qrImgController.text.trim(),
+                                                                              key: ValueKey(qrImgController.text + DateTime.now().millisecondsSinceEpoch.toString()),
+                                                                              errorBuilder: (context, error, stackTrace) => Center(child: Text("Failed to load image")),
+                                                                            )
+                                                                          : const Text(
+                                                                              "No image available"),
                                                                 ),
                                                                 SizedBox(
                                                                     height: 10),
@@ -973,7 +1150,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                                                         'QR code',
                                                                     onPressed:
                                                                         () {
-                                                                      showPicker(
+                                                                      showPickerQR(
                                                                         context,
                                                                       );
                                                                     }),
@@ -993,6 +1170,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                                                     onPressed:
                                                                         () {
                                                                       // updateProfile();
+                                                                      print(
+                                                                          "test");
+                                                                      updatePaymentShop();
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .pop();
                                                                     },
                                                                     child: Container(
                                                                         child: Center(

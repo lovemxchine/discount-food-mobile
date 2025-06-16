@@ -1338,7 +1338,7 @@ class _RegisterShopkeeperState extends State<RegisterShopkeeper> {
                             }),
                         const SizedBox(height: 16),
                         CustomImageUploadButton(
-                            label: 'รูปประจำร้าน',
+                            label: 'รูปพื้นหลังร้าน',
                             onPressed: () {
                               showPicker2(
                                 context,

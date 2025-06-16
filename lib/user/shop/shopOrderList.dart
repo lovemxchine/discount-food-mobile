@@ -226,6 +226,17 @@ class OrderListScreenState extends State<OrderListScreen> {
                               )
                             : Column(
                                 children: [
+                                  if (listOrder.isEmpty || listOrder[0] == null)
+                                    const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 30),
+                                        child: Text(
+                                          'ไม่มีออเดอร์สั่งสินค้า',
+                                          style: TextStyle(
+                                              fontSize: 16, color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
                                   for (int i = 0; i < listOrder.length; i++)
                                     if (listOrder[i] != null &&
                                         listOrder[i]['status'] ==

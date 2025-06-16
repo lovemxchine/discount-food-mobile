@@ -197,7 +197,7 @@ class HistoryListScreenState extends State<HistoryListScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'ประวัตออเดอร์',
+                            'ประวัติออเดอร์',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -287,123 +287,132 @@ class HistoryListScreenState extends State<HistoryListScreen> {
                               )
                             : Column(
                                 children: [
-                                  for (int i = 0; i < listOrder.length; i++)
-                                    if (listOrder[i] != null)
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8, horizontal: 20),
-                                        child: InkWell(
-                                          onTap: () {
-                                            print("logging ${listOrder[i]}");
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    OrderDetailScreen(
-                                                  orderData: listOrder[i],
+                                  if (listOrder.isEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Text(
+                                        "ไม่มีรายการออเดอร์",
+                                        style: GoogleFonts.prompt(
+                                          fontSize: 16,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    for (int i = 0; i < listOrder.length; i++)
+                                      if (listOrder[i] != null)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8, horizontal: 20),
+                                          child: InkWell(
+                                            onTap: () {
+                                              print("logging ${listOrder[i]}");
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      OrderDetailScreen(
+                                                    orderData: listOrder[i],
+                                                  ),
                                                 ),
+                                              );
+                                              // Navigator.push(
+                                              //   context,
+                                              //   MaterialPageRoute(
+                                              //     builder: (context) =>
+                                              //         OrderHistoryDetailScreen(
+                                              //       orderData: listOrder[i],
+                                              //     ),
+                                              //   ),
+                                              // );
+                                            },
+                                            child: Container(
+                                              height: 90,
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: Color.fromARGB(
+                                                    255, 237, 237, 237),
+                                                border: Border.all(
+                                                  color: const Color.fromARGB(
+                                                      255, 181, 181, 181),
+                                                  width: 2,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
                                               ),
-                                            );
-                                            // Navigator.push(
-                                            //   context,
-                                            //   MaterialPageRoute(
-                                            //     builder: (context) =>
-                                            //         OrderHistoryDetailScreen(
-                                            //       orderData: listOrder[i],
-                                            //     ),
-                                            //   ),
-                                            // );
-                                          },
-                                          child: Container(
-                                            height: 90,
-                                            padding: const EdgeInsets.all(12),
-                                            decoration: BoxDecoration(
-                                              color: Color.fromARGB(
-                                                  255, 237, 237, 237),
-                                              border: Border.all(
-                                                color: const Color.fromARGB(
-                                                    255, 181, 181, 181),
-                                                width: 2,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                            ),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(6.0),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                          "วันที่ " +
-                                                                  formatOrderDate(
-                                                                      listOrder[
-                                                                              i]
-                                                                          [
-                                                                          'orderAt'])
-                                                              as String,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(6.0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                            "วันที่ " +
+                                                                    formatOrderDate(
+                                                                        listOrder[i]
+                                                                            [
+                                                                            'orderAt'])
+                                                                as String,
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 12,
+                                                            )),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                            listOrder[i]
+                                                                ['status'],
+                                                            style: TextStyle(
+                                                                fontSize: 12,
+                                                                color: listOrder[i]
+                                                                            [
+                                                                            'status'] ==
+                                                                        "Pending Order"
+                                                                    ? Colors
+                                                                        .orange
+                                                                    : listOrder[i]['status'] ==
+                                                                            "Rejected"
+                                                                        ? Colors
+                                                                            .red
+                                                                        : Colors
+                                                                            .green)),
+                                                        Spacer(),
+                                                        Text(
+                                                          "รายละเอียดรายการ",
                                                           style:
                                                               const TextStyle(
                                                             fontSize: 12,
-                                                          )),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                          listOrder[i]
-                                                              ['status'],
-                                                          style: TextStyle(
-                                                              fontSize: 12,
-                                                              color: listOrder[
-                                                                              i]
-                                                                          [
-                                                                          'status'] ==
-                                                                      "Pending Order"
-                                                                  ? Colors
-                                                                      .orange
-                                                                  : listOrder[i]
-                                                                              [
-                                                                              'status'] ==
-                                                                          "Rejected"
-                                                                      ? Colors
-                                                                          .red
-                                                                      : Colors
-                                                                          .green)),
-                                                      Spacer(),
-                                                      Text(
-                                                        "รายละเอียดรายการ",
-                                                        style: const TextStyle(
-                                                          fontSize: 12,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 5,
-                                                      ),
-                                                      Icon(
-                                                        Icons.arrow_forward,
-                                                        size: 20,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
+                                                        const SizedBox(
+                                                          width: 5,
+                                                        ),
+                                                        Icon(
+                                                          Icons.arrow_forward,
+                                                          size: 20,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
                                   Padding(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 20),

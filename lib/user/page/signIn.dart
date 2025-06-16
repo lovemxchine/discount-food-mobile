@@ -118,7 +118,7 @@ class _SignInState extends State<SignIn> {
                     InkWell(
                       onTap: () => {
                         setState(() {
-                          emailController.text = "testshop3rd@gmail.com";
+                          emailController.text = "test@example.com";
                           passwordController.text = "123456";
                         })
                       },

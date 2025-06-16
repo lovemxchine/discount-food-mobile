@@ -204,7 +204,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Container(
                   width: double.infinity,
-                  height: 600,
+                  height: 700,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(10),
@@ -243,6 +243,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                             ),
                             Spacer(),
+                          ],
+                        ),
+                        SizedBox(height: 15),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Column(
+                              children: [
+                                Text(
+                                  'ลดเหลือ : ${widget.productData['salePrice']} บาท',
+                                  style: TextStyle(
+                                    //bold
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                                Text(
+                                  'ราคาเดิม : ${widget.productData['originalPrice']} บาท',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
+                            ),
                             ToggleButtons(
                               isSelected: isSelected,
                               onPressed: (int index) {
@@ -252,48 +278,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   }
                                   showStatus = index ==
                                       0; // Update showStatus based on the selected index
-                                  print(
-                                      "showStatus updated to: $showStatus"); // D
+                                  // D
                                 });
                               },
-                              children: <Widget>[
+                              children: const <Widget>[
                                 Padding(
-                                  padding: const EdgeInsets.all(6.0),
+                                  padding: EdgeInsets.all(6.0),
                                   child: Text('กำลังขาย',
                                       style: TextStyle(color: Colors.green)),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.all(6.0),
-                                  child: Text('ไม่ได้ขาย',
+                                  padding: EdgeInsets.all(6.0),
+                                  child: Text('หยุดขาย',
                                       style: TextStyle(color: Colors.red)),
                                 ),
                               ],
                             ),
-                            Spacer(),
-                          ],
-                        ),
-                        SizedBox(height: 15),
-                        Row(
-                          children: [
-                            Spacer(),
-                            Text(
-                              'ลดเหลือ : ${widget.productData['salePrice']} บาท',
-                              style: TextStyle(
-                                //bold
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                              ),
-                            ),
-                            Spacer(),
-                            Text(
-                              'ราคาเดิม : ${widget.productData['originalPrice']} บาท',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                            Spacer(),
                           ],
                         ),
                         Container(

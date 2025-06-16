@@ -207,6 +207,17 @@ class DiscountProductScreenState extends State<DiscountProductScreen> {
                               )
                             : Column(
                                 children: [
+                                  if (listProducts[0] == null)
+                                    const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 30),
+                                        child: Text(
+                                          'ไม่มีสินค้าที่กำลังลดราคา',
+                                          style: TextStyle(
+                                              fontSize: 16, color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
                                   for (int i = 0; i < listProducts.length; i++)
                                     if (listProducts[i] != null)
                                       if (listProducts[i]['showStatus'] &&

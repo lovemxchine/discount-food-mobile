@@ -173,15 +173,39 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16)
                           .copyWith(top: 16),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Text(
+                          const Text(
                             'สินค้าทั้งหมด',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.grey,
+                            ),
+                          ),
+                          Container(
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                    context, '/shop/addProduct');
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(left: 10),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'เพิ่มสินค้า',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -196,41 +220,67 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
                               )
                             : Column(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 20),
-                                    child: InkWell(
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                            context, '/shop/addProduct');
-                                      },
-                                      child: Container(
-                                        height: 90,
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          boxShadow: const [
-                                            BoxShadow(
-                                              color: Colors.black26,
-                                              blurRadius: 1,
-                                              offset: Offset(0, 4),
-                                            ),
-                                          ],
-                                        ),
-                                        child: const Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Spacer(),
-                                            Icon(Icons.add),
-                                            Spacer()
-                                          ],
+                                  // Padding(
+                                  //   padding: const EdgeInsets.symmetric(
+                                  //       vertical: 8, horizontal: 20),
+                                  //   child: InkWell(
+                                  //     onTap: () {
+                                  //       Navigator.pushNamed(
+                                  //           context, '/shop/addProduct');
+                                  //     },
+                                  //     child: Container(
+                                  //       height: 90,
+                                  //       padding: const EdgeInsets.all(12),
+                                  //       decoration: BoxDecoration(
+                                  //         color: Colors.white,
+                                  //         borderRadius:
+                                  //             BorderRadius.circular(12),
+                                  //         boxShadow: const [
+                                  //           BoxShadow(
+                                  //             color: Colors.black26,
+                                  //             blurRadius: 1,
+                                  //             offset: Offset(0, 4),
+                                  //           ),
+                                  //         ],
+                                  //       ),
+                                  //       child: const Row(
+                                  //         crossAxisAlignment:
+                                  //             CrossAxisAlignment.center,
+                                  //         children: [
+                                  //           Spacer(),
+                                  //           Icon(Icons.add),
+                                  //           Spacer()
+                                  //         ],
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // ),
+
+                                  if (listProducts[0] == null)
+                                    const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 30),
+                                        child: Text(
+                                          'ไม่มีสินค้าในร้านค้า',
+                                          style: TextStyle(
+                                              fontSize: 16, color: Colors.grey),
                                         ),
                                       ),
                                     ),
-                                  ),
+                                  if (listProducts[0] == null)
+                                    const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 10),
+                                        child: Text(
+                                          'กรุณาเพิ่มสินค้าที่ลดราคา',
+                                          style: TextStyle(
+                                              fontSize: 16, color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
+
+                                  const SizedBox(height: 10),
+
                                   for (int i = 0; i < listProducts.length; i++)
                                     if (listProducts[i] != null)
                                       Padding(
