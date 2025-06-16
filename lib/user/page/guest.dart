@@ -291,8 +291,6 @@ class _GuestScreenState extends State<GuestScreen> {
                                                   ],
                                                 ),
                                               ),
-                                              const Icon(Icons.favorite_border,
-                                                  color: Colors.red),
                                             ],
                                           ),
                                         ),

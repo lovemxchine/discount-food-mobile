@@ -517,8 +517,6 @@ class _PaymentState extends State<Payment> {
                                                                       child: Image
                                                                           .file(
                                                                         _image!,
-                                                                        fit: BoxFit
-                                                                            .contain,
                                                                       ),
                                                                     ),
                                                                     SizedBox(
@@ -666,6 +664,8 @@ class _PaymentState extends State<Payment> {
                               ElevatedButton(
                                 onPressed: () async {
                                   await requestOrder();
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
                                   Navigator.pop(context);
                                 },
                                 style: ElevatedButton.styleFrom(

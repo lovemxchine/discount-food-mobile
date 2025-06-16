@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/components/bottomNav.dart';
 import 'package:mobile/user/service/auth.dart';
@@ -268,7 +269,61 @@ class _SignInState extends State<SignIn> {
                                 ..onTap = () {
                                   Navigator.pushNamed(context, '/registerRole');
                                 })
-                        ]))
+                        ])),
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            title: Text(
+                              'ติดต่อผู้ดูแลระบบ',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontFamily: GoogleFonts.mitr().fontFamily),
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'หากมีปัญหาในการเข้าสู่ระบบ กรุณาติดต่อผู้ดูแลระบบที่เบอร์',
+                                  style: TextStyle(
+                                    fontFamily: GoogleFonts.mitr().fontFamily,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                SelectableText(
+                                  '099-999-9999',
+                                  style: TextStyle(
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    fontFamily: GoogleFonts.mitr().fontFamily,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('ปิด'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'ติดต่อผู้ดูแลระบบ',
+                        style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          color: Color.fromARGB(255, 16, 16, 16),
+                          fontFamily: GoogleFonts.mitr().fontFamily,
+                        ),
+                      ),
+                    ),
                   ],
                 )),
           ),

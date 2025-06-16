@@ -1,12 +1,14 @@
 import 'dart:convert';
-
-import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-
-import 'package:mobile/user/page/shopDetails.dart';
-
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:mobile/provider/cart_model.dart';
+import 'package:mobile/user/customer/cartList.dart';
+import 'package:mobile/user/customer/productDetail.dart';
+import 'package:mobile/user/customer/shopDetail.dart';
+import 'package:mobile/user/page/shopDetails.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String formatExpiredDate(String dateStr) {
@@ -22,10 +24,23 @@ class GuestProductInShop extends StatefulWidget {
 }
 
 class _GuestProductInShopState extends State<GuestProductInShop> {
-  int cartCount = 12;
   bool _isLoading = false;
   List listProducts = [];
-  var pathAPI = '';
+  String pathAPI = '';
+
+  @override
+  initState() {
+    super.initState();
+    initFetch();
+  }
+
+  Future<void> initFetch() async {
+    await fetchUrl();
+    await fetchProduct();
+    setState(() {
+      Provider.of<CartModel>(context, listen: false).clear();
+    });
+  }
 
   Future<void> fetchUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -36,30 +51,16 @@ class _GuestProductInShopState extends State<GuestProductInShop> {
     print(pathAPI);
   }
 
-  Future<void> initFetch() async {
-    await fetchUrl();
-    await fetchProduct();
-  }
-
-  @override
-  initState() {
-    super.initState();
-    initFetch();
-  }
-
   Future<void> fetchProduct() async {
-    print(widget.shopData['uid']);
     final url = Uri.parse(
         "$pathAPI/shop/${widget.shopData['uid']}/getAvailableProduct");
-    var response = await http.get(
-      url,
-    );
+    var response = await http.get(url);
     final responseData = jsonDecode(response.body);
+    print("test $pathAPI/shop/${widget.shopData['uid']}/getAvailableProduct");
     setState(() {
       listProducts = responseData['data'];
     });
 
-    // List arrData = decodedData['data'];
     print(listProducts.length);
     print(listProducts);
     print("hi");
@@ -67,69 +68,48 @@ class _GuestProductInShopState extends State<GuestProductInShop> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Stack(
-          children: [
-            Column(
-              children: [
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                      width: double.infinity,
-                      height: 200,
-                      child: Image.network(
-                        widget.shopData['imgUrl'] != null &&
-                                widget.shopData['imgUrl']['shopCoverUrl'] !=
-                                    null &&
-                                widget.shopData['imgUrl']['shopCoverUrl']
-                                    .toString()
-                                    .isNotEmpty
-                            ? widget.shopData['imgUrl']['shopCoverUrl']
-                            : 'https://via.placeholder.com/400x200',
-                        fit: BoxFit.cover,
-                      )),
-                ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 224, 217, 217),
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12.0),
-                                child: Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage(
-                                        widget.shopData['imgUrl']['shopUrl'] !=
-                                                    null &&
-                                                widget.shopData['imgUrl']
-                                                        ['shopUrl']
-                                                    .toString()
-                                                    .isNotEmpty
-                                            ? widget.shopData['imgUrl']
-                                                ['shopUrl']
-                                            : 'https://via.placeholder.com/100', // fallback image
-                                      ),
-                                      fit: BoxFit.cover,
-                                    ),
+    final cartCount = Provider.of<CartModel>(context, listen: true).count;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Main content column
+          Column(
+            children: [
+              // Cover image space
+              Container(
+                width: double.infinity,
+                height: 200,
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 224, 217, 217),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12.0),
+                              child: Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                        widget.shopData['imgUrl']['shopUrl']),
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 16),
-                              Column(
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
@@ -159,17 +139,43 @@ class _GuestProductInShopState extends State<GuestProductInShop> {
                                     child: Text(
                                       'รายละเอียดร้านค้า',
                                       style: TextStyle(
-                                        color: const Color.fromARGB(
-                                            255, 95, 95, 95),
+                                        color: Color.fromARGB(255, 95, 95, 95),
                                         fontSize: 16,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (listProducts.isEmpty)
+                        Expanded(
+                          child: GridView.builder(
+                            padding: EdgeInsets.all(16),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 1,
+                                    childAspectRatio: 1,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 12),
+                            itemCount: 1,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  'ไม่มีสินค้าที่ลดราคาในขณะนี้',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
+                      if (!listProducts.isEmpty)
                         Expanded(
                           child: GridView.builder(
                             padding: EdgeInsets.all(16),
@@ -182,39 +188,67 @@ class _GuestProductInShopState extends State<GuestProductInShop> {
                             ),
                             itemCount: listProducts.length,
                             itemBuilder: (context, index) {
+                              final item = listProducts[index];
                               return ProductCard(
-                                productName: listProducts[index]['productName'],
-                                expirationDate: listProducts[index]
-                                    ['expiredDate'],
-                                oldPrice: listProducts[index]['originalPrice'],
-                                newPrice: listProducts[index]['salePrice'],
-                                imageAsset: listProducts[index]['imageUrl'],
+                                productName: item['productName'],
+                                expirationDate: item['expiredDate'],
+                                oldPrice: item['originalPrice'],
+                                newPrice: item['salePrice'],
+                                imageAsset: item['imageUrl'],
+                                productData: item,
                               );
                             },
                           ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            Positioned(
-              top: 40,
-              left: 12,
-              child: FloatingActionButton(
-                onPressed: () {
-                  Navigator.pop(context);
+              ),
+            ],
+          ),
+          // Positioned elements that must be direct children of Stack
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              width: double.infinity,
+              height: 200,
+              child: Image.network(
+                widget.shopData['imgUrl']['shopCoverUrl'],
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
                 },
-                child: Icon(Icons.arrow_back),
-                backgroundColor: Colors.transparent,
-                // foregroundColor: Colors.black,
-                elevation: 0,
-                mini: true, // Makes the button smaller
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset('assets/images/alt.png');
+                },
               ),
             ),
-          ],
-        ),
+          ),
+
+          Positioned(
+            top: 40,
+            left: 12,
+            child: FloatingActionButton(
+              onPressed: () {
+                Provider.of<CartModel>(context, listen: false).clear();
+
+                Navigator.pop(context);
+              },
+              child: Icon(
+                Icons.arrow_back_ios_new_outlined,
+                color: Colors.black,
+              ),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              mini: true,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -226,6 +260,7 @@ class ProductCard extends StatelessWidget {
   final int oldPrice;
   final int newPrice;
   final String imageAsset;
+  final Map<String, dynamic> productData;
 
   ProductCard({
     Key? key,
@@ -233,83 +268,98 @@ class ProductCard extends StatelessWidget {
     required this.expirationDate,
     required this.oldPrice,
     required this.newPrice,
+    required this.productData,
     this.imageAsset = 'assets/images/alt.png',
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        // crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-                child: Image.network(
-                  imageAsset,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  productName,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+    return GestureDetector(
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
                   ),
                 ),
-                // SizedBox(height: 4),
-                // Text(
-                //   'หมดอายุวันที่ ${formatExpiredDate(expirationDate)}',
-                //   style: TextStyle(fontSize: 12, color: Colors.grey),
-                // ),
-                SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'ราคาเดิม ${oldPrice} บาท',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'เหลือ ${newPrice} บาท',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                  ),
+                  child: Image.network(
+                    imageAsset,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset('assets/images/alt.png');
+                    },
+                  ),
                 ),
-                SizedBox(height: 4),
-              ],
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    productName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'ราคาเดิม $oldPrice บาท',
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'เหลือ $newPrice บาท',
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4),
+                  Center(
+                    child: Text(
+                      'เหลือ ${productData['stock']} ชิ้น',
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 57, 57, 57),
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

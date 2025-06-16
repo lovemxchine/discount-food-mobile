@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mobile/user/customer/googleMapShopDetail.dart';
 import 'package:mobile/user/customer/productInshop.dart';
 
 class ShopDetails extends StatefulWidget {
@@ -127,7 +128,10 @@ class _ShopDetailsState extends State<ShopDetails> {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                'placeholder',
+                                '${widget.shopData?['shopLocation_th']?['place'] ?? ''}, '
+                                '${widget.shopData?['shopLocation_th']?['subdistrict'] ?? ''}, '
+                                '${widget.shopData?['shopLocation_th']?['district'] ?? ''}, '
+                                '${widget.shopData?['shopLocation_th']?['province'] ?? ''}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey,
@@ -138,7 +142,64 @@ class _ShopDetailsState extends State<ShopDetails> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 100),
+                    SizedBox(height: 16),
+                    Center(
+                      child: Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(top: 16),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => GoogleMapShopDetail(
+                                  initialLocation: LatLng(
+                                    widget.shopData?['googleLocation']
+                                            ?['lat'] ??
+                                        0.0,
+                                    widget.shopData?['googleLocation']
+                                            ?['lng'] ??
+                                        0.0,
+                                  ),
+                                  lockOnStart: true,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.blue.shade200),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 8),
+                                  child: Icon(Icons.map,
+                                      color: Colors.blue, size: 28),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 12),
+                                  child: Text(
+                                    'ดูแผนที่ร้าน',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
