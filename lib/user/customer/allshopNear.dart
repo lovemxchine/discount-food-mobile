@@ -151,6 +151,8 @@ class _AllShopNearbyState extends State<AllShopNearby> {
         setState(() {
           listProducts = result['data'];
         });
+      } else {
+        listProducts = []; // Clear the list if no data or error
       }
       print("nearby shop ${listProducts}");
     } catch (e) {
@@ -194,13 +196,13 @@ class _AllShopNearbyState extends State<AllShopNearby> {
                     leading: Radio<double>(
                       value: distance,
                       groupValue: selectedDistance,
-                      onChanged: (double? value) {
+                      onChanged: (double? value) async {
                         if (value != null) {
                           setState(() {
                             selectedDistance = value;
                           });
                           Navigator.pop(context);
-                          _fetchNearbyShops(); // Refresh shops with new distance
+                          await _fetchNearbyShops(); // Refresh shops with new distance
                         }
                       },
                       activeColor: const Color(0xFFFF6838),

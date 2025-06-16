@@ -227,18 +227,18 @@ class _GoogleMapShopDetailState extends State<GoogleMapShopDetail> {
           ),
 
           // Current Location Button
-          Positioned(
-            left: 16,
-            bottom: 16,
-            child: FloatingActionButton(
-              onPressed: _getCurrentLocation,
-              child: Icon(Icons.my_location),
-              tooltip: 'Get Current Location',
-              backgroundColor: Colors.blueGrey,
-              elevation: 4,
-              heroTag: "location_button",
-            ),
-          ),
+          // Positioned(
+          //   left: 16,
+          //   bottom: 16,
+          //   child: FloatingActionButton(
+          //     onPressed: _getCurrentLocation,
+          //     child: Icon(Icons.my_location),
+          //     tooltip: 'Get Current Location',
+          //     backgroundColor: Colors.blueGrey,
+          //     elevation: 4,
+          //     heroTag: "location_button",
+          //   ),
+          // ),
 
           // Lock/Unlock Button
 
