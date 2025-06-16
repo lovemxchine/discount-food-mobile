@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobile/user/customer/googleMapShopDetail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -307,7 +308,62 @@ class _ShopdetailState extends State<Shopdetail> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 100),
+                        Center(
+                          child: Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(top: 16),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => GoogleMapShopDetail(
+                                      initialLocation: LatLng(
+                                        shopData?['googleLocation']?['lat'] ??
+                                            0.0,
+                                        shopData?['googleLocation']?['lng'] ??
+                                            0.0,
+                                      ),
+                                      lockOnStart: true,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(top: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border:
+                                      Border.all(color: Colors.blue.shade200),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 8),
+                                      child: Icon(Icons.map,
+                                          color: Colors.blue, size: 28),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 12),
+                                      child: Text(
+                                        'ดูแผนที่ร้าน',
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
