@@ -63,8 +63,8 @@ class _MyAppState extends State<MyApp> {
   Future<void> _setApiUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('apiUrl',
-        'http://10.0.2.2:3000'); //TODO: dont forget to change to https://discount-food-api.onrender.com
-    // 'https://discount-food-api.onrender.com'); //TODO: dont forget to change to https://discount-food-api.onrender.com
+        // 'http://10.0.2.2:3000'); //TODO: dont forget to change to https://discount-food-api.onrender.com
+    'https://discount-food-api.onrender.com'); //TODO: dont forget to change to https://discount-food-api.onrender.com
   }
 
   @override
