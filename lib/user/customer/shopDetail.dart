@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'package:mobile/user/customer/productInshop.dart';
 import 'package:mobile/user/customer/reportShop.dart';
 // import 'package:latlong2/latlong.dart'; // for LatLng
+import 'package:url_launcher/url_launcher.dart';
 
 class Shopdetail extends StatefulWidget {
   final Map<String, dynamic> shopData;
@@ -317,15 +318,34 @@ class _ShopdetailState extends State<Shopdetail> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => GoogleMapShopDetail(
-                                      initialLocation: LatLng(
-                                        shopData?['googleLocation']?['lat'] ??
-                                            0.0,
-                                        shopData?['googleLocation']?['lng'] ??
-                                            0.0,
-                                      ),
-                                      lockOnStart: true,
-                                    ),
+                                    builder: (context) {
+                                      final lat = shopData?['googleLocation']
+                                              ?['lat'] ??
+                                          0.0;
+                                      final lng = shopData?['googleLocation']
+                                              ?['lng'] ??
+                                          0.0;
+                                      final url =
+                                          'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng';
+                                      // Open Google Maps in browser
+                                      Future.delayed(Duration.zero, () async {
+                                        if (await canLaunchUrl(
+                                            Uri.parse(url))) {
+                                          await launchUrl(Uri.parse(url),
+                                              mode: LaunchMode
+                                                  .externalApplication);
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text(
+                                                    'ไม่สามารถเปิด Google Maps ได้')),
+                                          );
+                                        }
+                                        Navigator.pop(context);
+                                      });
+                                      return const SizedBox.shrink();
+                                    },
                                   ),
                                 );
                               },

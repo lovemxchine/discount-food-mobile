@@ -209,10 +209,25 @@ class _AddProductScreenState extends State<AddProductScreen> {
         print(resData['new_price']);
         print(resData['expiry_date']);
         setState(() {
-          nameController.text = resData['product_name'].toString();
-          originalPrice.text = resData['old_price'].toString();
-          salePrice.text = resData['new_price'].toString();
-          expiredDate.text = resData['expiry_date'].toString();
+          if (resData['product_name'] != null) {
+            nameController.text = resData['product_name'].toString();
+          }
+
+          if (resData['old_price'] != null) {
+            originalPrice.text = resData['old_price'].toString();
+          }
+
+          if (resData['new_price'] != null) {
+            salePrice.text = resData['new_price'].toString();
+          }
+
+          if (resData['expiry_date'] != null) {
+            expiredDate.text = resData['expiry_date'].toString();
+          }
+          // nameController.text = resData['product_name'].toString();
+          // originalPrice.text = resData['old_price'].toString();
+          // salePrice.text = resData['new_price'].toString();
+          // expiredDate.text = resData['expiry_date'].toString();
         });
       } else {
         // print(jsonDecode(response.body));
@@ -498,6 +513,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 SizedBox(height: 15),
                 InkWell(
                   onTap: () {
+                    if (originalPrice.text.isEmpty || salePrice.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('กรุณากรอกข้อมูลให้ครบถ้วน'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
                     addProductFunc();
                   },
                   child: Container(

@@ -169,7 +169,7 @@ class _PaymentState extends State<Payment> {
   Future<void> requestOrder() async {
     String? uid = await getUID();
     var pathAPI = await fetchUrl();
-    final url = Uri.parse("$pathAPI/customer/orderRequest");
+    final url = Uri.parse("$pathAPI/customer/orderRequestNew");
     final cartData = Provider.of<CartModel>(context, listen: false);
     try {
       var request = http.MultipartRequest('POST', url);
